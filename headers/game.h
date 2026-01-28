@@ -4,6 +4,12 @@
 
     extern Vector2 mousePos;
 
+    typedef struct{
+        float enemySpawnTimer;
+    }Game;
+
+    
+
     void gameInit();
 
     void gameSetFullscreen();
@@ -13,5 +19,7 @@
     void gameResolutionDraw();
 
     void gameDraw();
+
+    void spawnEnemies();
 
 #endif

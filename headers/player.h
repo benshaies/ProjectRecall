@@ -4,7 +4,7 @@
 
     typedef enum{
         IDLE,
-        MOVING,
+        PULLING_IN,
     }State;
 
     typedef enum{

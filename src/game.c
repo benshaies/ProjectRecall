@@ -1,14 +1,19 @@
 #include "../headers/game.h"
 #include "math.h"
 #include "../headers/player.h"
+#include "../headers/enemy.h"
 
 const int GAME_WIDTH = 1280;
 const int GAME_HEIGHT = 720;
 RenderTexture2D target;
 
+Game game;
+
 Player player;
 
 Vector2 mousePos;
+
+Enemy enemy[ENEMY_NUM];
 
 void gameInit(){
     InitWindow(GAME_WIDTH, GAME_HEIGHT, "Project Recall");  
@@ -16,6 +21,8 @@ void gameInit(){
 
     target = LoadRenderTexture(GAME_WIDTH, GAME_HEIGHT);
     SetTextureFilter(target.texture, TEXTURE_FILTER_POINT); 
+
+    game.enemySpawnTimer = 0;
 
     playerInit(&player);
 }
@@ -30,6 +37,17 @@ void gameUpdate(){
     gameSetFullscreen();
 
     playerUpdate(&player);
+    //spawnEnemies();
+
+    enemyUpdate(enemy, player.pos, player.axe.rec);
+}
+
+void spawnEnemies(){
+    game.enemySpawnTimer += GetFrameTime();
+    if(game.enemySpawnTimer > 1.0){
+        enemyInit(enemy, player.pos);
+        game.enemySpawnTimer = 0;
+    }
 }
 
 void gameResolutionDraw(){
@@ -75,6 +93,7 @@ void gameDraw(){
         ClearBackground(WHITE);
 
         playerDraw(&player);
+        enemyDraw(enemy);
 
         DrawFPS(0,0);
     

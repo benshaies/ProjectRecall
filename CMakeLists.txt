@@ -42,6 +42,7 @@ set(SOURCES
     ../src/main.c
     ../src/game.c
     ../src/player.c
+    ../src/enemy.c
 )
 
 # Create executable

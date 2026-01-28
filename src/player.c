@@ -8,8 +8,10 @@ int player_height = 75;
 
 const float axeBaseSpeed = 10;
 const float axeRecallSpeed = 13;
-const float axeSpeedIncrementThrown = 0.25;
+const float axeSpeedIncrementThrown = 0.5;
 const float axeSpeedIncrementRecall = 0.75;
+
+const float playerBaseSpeed = 5.0f;
 
 void playerInit(Player *player){
     player->pos = (Vector2){1280/2, 720/2};
@@ -36,19 +38,39 @@ void playerUpdate(Player *player){
 
 void playerMovement(Player *player){
     
-    //Get input
-    if(IsKeyDown(KEY_A)){
-        player->dir.x -= 1;
+    switch (player->state){
+        case IDLE:
+            break;
+        case PULLING_IN:
+            player->dir = (Vector2){player->axe.pos.x - player->pos.x, player->axe.pos.y - player->pos.y};
+            player->speed += 1;
+
+            if(player->axe.state == HOLDING){
+                player->state = IDLE;
+                player->speed = playerBaseSpeed;
+            }
+            break;
+
     }
-    else if(IsKeyDown(KEY_D)){
-        player->dir.x += 1;
+    if(player->axe.state != HOLDING && IsKeyPressed(KEY_SPACE)){
+        player->state = PULLING_IN;
     }
 
-    if(IsKeyDown(KEY_W)){
-        player->dir.y -= 1;
-    }
-    else if(IsKeyDown(KEY_S)){
-        player->dir.y += 1;
+    if(player->state != PULLING_IN){
+        //Get input
+        if(IsKeyDown(KEY_A)){
+            player->dir.x -= 1;
+        }
+        else if(IsKeyDown(KEY_D)){
+            player->dir.x += 1;
+        }
+
+        if(IsKeyDown(KEY_W)){
+            player->dir.y -= 1;
+        }
+        else if(IsKeyDown(KEY_S)){
+            player->dir.y += 1;
+        }
     }
 
     //Add direction to player but first normalize
@@ -59,7 +81,6 @@ void playerMovement(Player *player){
     //Reset dir
     player->dir = (Vector2){0,0};
 
-
     //Update rec
     player->rec = (Rectangle){player->pos.x, player->pos.y, player_width, player_height};
 
@@ -68,7 +89,7 @@ void playerMovement(Player *player){
 void axeUpdate(Player *player){
     switch (player->axe.state){
         case HOLDING:
-            player->axe.pos = player->pos;
+            player->axe.pos = (Vector2){player->pos.x + 32.5, player->pos.y + 32.5};
             if(IsMouseButtonPressed(MOUSE_BUTTON_LEFT)){
                 player->axe.attackPos = mousePos;
                 player->axe.dir = (Vector2){player->axe.attackPos.x - player->axe.rec.x, player->axe.attackPos.y - player->axe.rec.y};
@@ -92,12 +113,20 @@ void axeUpdate(Player *player){
 
                 player->axe.throwSpeed = axeBaseSpeed;
             }
+
+            if(IsMouseButtonPressed(MOUSE_BUTTON_RIGHT)){
+                player->axe.attackPos = (Vector2){0,0};
+                player->axe.dir = (Vector2){0,0};
+                player->axe.state = RECALL;
+
+                player->axe.throwSpeed = axeBaseSpeed;
+            }
             break;
             
 
         case DONE_THROW:
             if(IsMouseButtonPressed(MOUSE_BUTTON_RIGHT)){
-                player->axe.dir = (Vector2){player->pos.x - player->axe.pos.x, player->pos.y - player->axe.pos.y};
+                player->axe.dir = (Vector2){player->pos.x - 32.5 - player->axe.pos.x, player->pos.y - 32.5 - player->axe.pos.y};
                 player->axe.state = RECALL;
             }
             break;
@@ -115,22 +144,18 @@ void axeUpdate(Player *player){
                 player->axe.recallSpeed = axeRecallSpeed;
             }
             break;
-            
-        
-        
+    }
 
+    //Returns 
+    if((CheckCollisionRecs(player->rec, player->axe.rec)) && player->state == PULLING_IN){
+        player->axe.state = HOLDING;
     }
 
     //Update axe rec
     player->axe.rec = (Rectangle){player->axe.pos.x, player->axe.pos.y, 25, 25};
-    printf("x:%f y:%f \n", player->axe.pos.x, player->axe.pos.y);
 }
 
 void playerDraw(Player *player){
     DrawRectangleRec(player->rec, BLACK);
     DrawRectangleRec(player->axe.rec, BLUE);
-
-    if(player->axe.state == THROWN){
-        DrawCircle(player->axe.attackPos.x, player->axe.attackPos.y, player->axe.attackCheckRadius, RED);
-    }
 }
