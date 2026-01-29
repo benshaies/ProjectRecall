@@ -19,6 +19,8 @@ void playerInit(Player *player){
     player->speed = 5.0f;
     player->dir = (Vector2){0,0};
     player->state = IDLE;
+    player->health = 100.0f;
+    player->baseHealth = 100.0f;
 
     //Weapon stuff
     player->axe.pos = (Vector2){player->pos.x, player->pos.y};
@@ -28,6 +30,9 @@ void playerInit(Player *player){
     player->axe.state = HOLDING;
     player->axe.attackPos = (Vector2){0,0};
     player->axe.attackCheckRadius = 25.0;
+    player->axe.damage = 50;
+
+
 }
 
 void playerUpdate(Player *player){
@@ -158,4 +163,5 @@ void axeUpdate(Player *player){
 void playerDraw(Player *player){
     DrawRectangleRec(player->rec, BLACK);
     DrawRectangleRec(player->axe.rec, BLUE);
+    DrawRectangle(player->rec.x, player->rec.y - 30, player->rec.width * (player->health/player->baseHealth), 25, BLUE);
 }

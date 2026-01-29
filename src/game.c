@@ -25,6 +25,8 @@ void gameInit(){
     game.enemySpawnTimer = 0;
 
     playerInit(&player);
+
+    enemyInit(enemy, player.pos);
 }
 
 void gameSetFullscreen(){
@@ -37,9 +39,10 @@ void gameUpdate(){
     gameSetFullscreen();
 
     playerUpdate(&player);
-    //spawnEnemies();
+    spawnEnemies();
 
-    enemyUpdate(enemy, player.pos, player.axe.rec);
+    enemyUpdate(enemy, player.rec, player.axe.rec, player.axe.damage);
+
 }
 
 void spawnEnemies(){

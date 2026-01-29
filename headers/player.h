@@ -25,6 +25,9 @@
         float attackCheckRadius;
         Vector2 dir;
 
+        float damage;
+        
+
     }Weapon;
 
     typedef struct{
@@ -34,6 +37,8 @@
         float speed;
         Vector2 dir;
         State state;
+        float health;
+        float baseHealth;
 
         //Axe varaibles
         Weapon axe;

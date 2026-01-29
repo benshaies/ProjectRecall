@@ -5,6 +5,7 @@
 int main(void){
 
     gameInit();
+    ToggleBorderlessWindowed();
     while (!WindowShouldClose()){
         gameUpdate();
         gameDraw();
