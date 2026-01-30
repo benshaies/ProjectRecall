@@ -2,6 +2,7 @@
 #include "raymath.h"
 #include "stdio.h"
 #include "../headers/game.h"
+#include "../headers/textures.h"
 
 int player_width = 75;
 int player_height = 75;
@@ -31,6 +32,10 @@ void playerInit(Player *player){
     player->axe.attackPos = (Vector2){0,0};
     player->axe.attackCheckRadius = 25.0;
     player->axe.damage = 50;
+
+    //Animations
+    animationInit(&player->playerIdleAnim, 0, playerIdleTexture, 16, 4, 0, 0);
+    animationInit(&player->playerSideAnim, 0, playerSideTexture, 16, 7, 0, 0);
 
 
 }
@@ -161,7 +166,13 @@ void axeUpdate(Player *player){
 }
 
 void playerDraw(Player *player){
-    DrawRectangleRec(player->rec, BLACK);
+    
+
+
     DrawRectangleRec(player->axe.rec, BLUE);
     DrawRectangle(player->rec.x, player->rec.y - 30, player->rec.width * (player->health/player->baseHealth), 25, BLUE);
+
+    playAnimation(&player->playerSideAnim, player->rec, 1, 0.075);
+
+
 }

@@ -49,7 +49,7 @@ void enemyUpdate(Enemy enemy[], Rectangle playerRec, Rectangle axeRec, float cur
 
             //Check Collision with player
             if(CheckCollisionRecs(enemy[i].rec, playerRec)){
-                CloseWindow();
+                
             }
 
         

@@ -2,6 +2,7 @@
 #include "math.h"
 #include "../headers/player.h"
 #include "../headers/enemy.h"
+#include "../headers/textures.h"
 
 const int GAME_WIDTH = 1280;
 const int GAME_HEIGHT = 720;
@@ -22,11 +23,11 @@ void gameInit(){
     target = LoadRenderTexture(GAME_WIDTH, GAME_HEIGHT);
     SetTextureFilter(target.texture, TEXTURE_FILTER_POINT); 
 
+    texturesLoad();
+
     game.enemySpawnTimer = 0;
 
     playerInit(&player);
-
-    enemyInit(enemy, player.pos);
 }
 
 void gameSetFullscreen(){
@@ -39,7 +40,7 @@ void gameUpdate(){
     gameSetFullscreen();
 
     playerUpdate(&player);
-    spawnEnemies();
+    //spawnEnemies();
 
     enemyUpdate(enemy, player.rec, player.axe.rec, player.axe.damage);
 
