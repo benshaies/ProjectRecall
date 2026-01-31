@@ -27,7 +27,6 @@
         Vector2 dir;
 
         float damage;
-        
 
     }Weapon;
 

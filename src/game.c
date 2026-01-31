@@ -40,9 +40,9 @@ void gameUpdate(){
     gameSetFullscreen();
 
     playerUpdate(&player);
-    //spawnEnemies();
+    spawnEnemies();
 
-    enemyUpdate(enemy, player.rec, player.axe.rec, player.axe.damage);
+    enemyUpdate(enemy, player.rec, player.axe.rec, player.axe.damage, player.axe.state, (player.axe.state == 1)?player.axe.throwSpeed:player.axe.recallSpeed);
 
 }
 
@@ -94,7 +94,7 @@ void gameResolutionDraw(){
 void gameDraw(){
     BeginTextureMode(target);
 
-        ClearBackground(WHITE);
+        ClearBackground(BLACK);
 
         playerDraw(&player);
         enemyDraw(enemy);
