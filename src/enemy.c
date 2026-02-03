@@ -7,7 +7,7 @@ void enemyInit(Enemy enemy[], Vector2 playerPos){
         if(!enemy[i].active){
             enemy[i].pos = (Vector2){GetRandomValue(0, 1280), GetRandomValue(0, 720)};
             enemy[i].rec = (Rectangle){enemy[i].pos.x, enemy[i].pos.y, 50, 50};
-            enemy[i].speed = 1.0f;
+            enemy[i].speed = 2.0f;
             enemy[i].dir = Vector2Normalize((Vector2){playerPos.x - enemy[i].pos.x, playerPos.y - enemy[i].pos.y});
             enemy[i].active = true;
             enemy[i].health = 100;
@@ -15,12 +15,13 @@ void enemyInit(Enemy enemy[], Vector2 playerPos){
             enemy[i].state = NOT_HIT;
             enemy[i].knockbackDir = (Vector2){0,0};
             enemy[i].color = GREEN;
+            enemy[i].hitFrameCount = 0;
             break;
         }
     }
 }
 
-void enemyUpdate(Enemy enemy[], Rectangle playerRec, Rectangle axeRec, float currentAxeDamage, int currentAxeState, float axeSpeed){
+void enemyUpdate(Enemy enemy[], Rectangle playerRec, Weapon axe){
     for(int i = 0; i < ENEMY_NUM; i++){
         if(enemy[i].active){
 
@@ -32,25 +33,43 @@ void enemyUpdate(Enemy enemy[], Rectangle playerRec, Rectangle axeRec, float cur
             enemy[i].rec = (Rectangle){enemy[i].pos.x, enemy[i].pos.y, 50, 50};
         
 
-            //Enemy hit check (Only acitvates if enemy isnt currently hit) //1 = THROWN
+            //Enemy hit check (Only acitvates if enemy isnt currently hit) 
+            //1 = THROWN
             //2 = RECALL
-            if(CheckCollisionRecs(enemy[i].rec, axeRec) && enemy[i].state == NOT_HIT && (currentAxeState == 1 || currentAxeState == 3)) {
-                enemy[i].knockbackDir = Vector2Normalize((Vector2){enemy[i].rec.x + enemy[i].rec.width - axeRec.x, enemy[i].rec.y + enemy[i].rec.height  - axeRec.y});
+            if(CheckCollisionRecs(enemy[i].rec, axe.rec) && enemy[i].state == NOT_HIT && (axe.state == 1 || axe.state == 3)) {
+                enemy[i].knockbackDir = Vector2Normalize(axe.dir);
+
                 enemy[i].color = WHITE;
-                WaitTime(GetFrameTime());
-                enemy[i].health -= currentAxeDamage;
-                printf("%d\n", enemy[i].health);
+                enemy[i].health -= axe.damage;
                 enemy[i].state = HIT;
+
             }
 
             //Add knockback to enemy
             if(enemy[i].state == HIT){
-                enemy[i].pos.x += enemy[i].knockbackDir.x * axeSpeed;
-                enemy[i].pos.y += enemy[i].knockbackDir.y * axeSpeed;
+                enemy[i].pos.x += enemy[i].knockbackDir.x * axe.throwSpeed;
+                enemy[i].pos.y += enemy[i].knockbackDir.y * axe.throwSpeed;
+
+                enemy[i].hitFrameCount++;
+
+                if(enemy[i].hitFrameCount >= 4){
+                    enemy[i].state = IMMUNE;
+                    enemy[i].hitFrameCount = 0;
+                }
+                
+
+            }
+
+            //Enemy is hit but immune now
+            if(enemy[i].state == IMMUNE){
+                enemy[i].color = RED;
+                if(!CheckCollisionRecs(enemy[i].rec, axe.rec)){
+                    enemy[i].state = NOT_HIT;
+                }
             }
 
             //If axe and enemy not colliding, resets state
-            if(!CheckCollisionRecs(enemy[i].rec,axeRec)){
+            if(!CheckCollisionRecs(enemy[i].rec,axe.rec) && enemy[i].state != IMMUNE){
                 enemy[i].state = NOT_HIT;
                 enemy[i].color = GREEN;
             }
@@ -60,9 +79,10 @@ void enemyUpdate(Enemy enemy[], Rectangle playerRec, Rectangle axeRec, float cur
                 enemyDelete(enemy, i);
             }
 
+
             //Check Collision with player
             if(CheckCollisionRecs(enemy[i].rec, playerRec)){
-                
+                //CloseWindow();
             }
 
         

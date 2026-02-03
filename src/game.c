@@ -16,6 +16,8 @@ Vector2 mousePos;
 
 Enemy enemy[ENEMY_NUM];
 
+bool startGame = false;
+
 void gameInit(){
     InitWindow(GAME_WIDTH, GAME_HEIGHT, "Project Recall");  
     SetTargetFPS(60);
@@ -28,6 +30,7 @@ void gameInit(){
     game.enemySpawnTimer = 0;
 
     playerInit(&player);
+    // /enemyInit(enemy, player.pos);
 }
 
 void gameSetFullscreen(){
@@ -40,15 +43,22 @@ void gameUpdate(){
     gameSetFullscreen();
 
     playerUpdate(&player);
-    spawnEnemies();
 
-    enemyUpdate(enemy, player.rec, player.axe.rec, player.axe.damage, player.axe.state, (player.axe.state == 1)?player.axe.throwSpeed:player.axe.recallSpeed);
+    if(IsKeyPressed(KEY_TAB)){
+        startGame = !startGame;
+    }
+    if(startGame){
+        spawnEnemies();
+    }
+    
+
+    enemyUpdate(enemy, player.rec, player.axe);
 
 }
 
 void spawnEnemies(){
     game.enemySpawnTimer += GetFrameTime();
-    if(game.enemySpawnTimer > 1.0){
+    if(game.enemySpawnTimer > 1.5){
         enemyInit(enemy, player.pos);
         game.enemySpawnTimer = 0;
     }
@@ -99,7 +109,6 @@ void gameDraw(){
         playerDraw(&player);
         enemyDraw(enemy);
 
-        DrawFPS(0,0);
     
     EndTextureMode();
 

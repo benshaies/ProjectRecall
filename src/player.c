@@ -34,7 +34,7 @@ void playerInit(Player *player){
     player->axe.damage = 50;
 
     //Animations
-    animationInit(&player->playerIdleAnim, 0, playerIdleTexture, 16, 2, 0, 0);
+    animationInit(&player->playerIdleAnim, 0, playerIdleTexture, 16, 5, 0, 0);
     animationInit(&player->playerSideAnim, 0, playerSideTexture, 16, 7, 0, 0);
 
 
@@ -168,11 +168,13 @@ void axeUpdate(Player *player){
 void playerDraw(Player *player){
     
 
-
-    DrawRectangleRec(player->axe.rec, BLUE);
+    if(player->axe.state != 0){
+        DrawRectangleRec(player->axe.rec, BLUE);
+    }
+    
     DrawRectangle(player->rec.x, player->rec.y - 30, player->rec.width * (player->health/player->baseHealth), 25, BLUE);
 
-    playAnimation(&player->playerIdleAnim, player->rec, 1, 0.25);
+    playAnimation(&player->playerIdleAnim, player->rec, 1, 0.15);
 
 
 }
