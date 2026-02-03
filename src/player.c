@@ -7,6 +7,11 @@
 int player_width = 75;
 int player_height = 75;
 
+const int axeWidth = 25;
+const int axeHeight = 25;
+
+const int axeHoverRadius = 60;
+
 const float axeBaseSpeed = 10;
 const float axeRecallSpeed = 13;
 const float axeSpeedIncrementThrown = 0.5;
@@ -16,7 +21,7 @@ const float playerBaseSpeed = 5.0f;
 
 void playerInit(Player *player){
     player->pos = (Vector2){1280/2, 720/2};
-    player->rec = (Rectangle){player->pos.x, player->pos.y, player_width, player_height};
+    player->rec = (Rectangle){player->pos.x - player_width/2, player->pos.y - player_height/2, player_width, player_height};
     player->speed = 5.0f;
     player->dir = (Vector2){0,0};
     player->state = IDLE;
@@ -25,12 +30,12 @@ void playerInit(Player *player){
 
     //Weapon stuff
     player->axe.pos = (Vector2){player->pos.x, player->pos.y};
-    player->axe.rec = (Rectangle){player->axe.pos.x,player->axe.pos.y, 20, 20};
+    player->axe.rec = (Rectangle){player->axe.pos.x - axeWidth/2,player->axe.pos.y - axeHeight/2, axeWidth, axeHeight};
     player->axe.throwSpeed = axeBaseSpeed;
     player->axe.recallSpeed = axeRecallSpeed;
     player->axe.state = HOLDING;
     player->axe.attackPos = (Vector2){0,0};
-    player->axe.attackCheckRadius = 25.0;
+    player->axe.attackCheckRadius = 15.0;
     player->axe.damage = 50;
 
     //Animations
@@ -92,14 +97,21 @@ void playerMovement(Player *player){
     player->dir = (Vector2){0,0};
 
     //Update rec
-    player->rec = (Rectangle){player->pos.x, player->pos.y, player_width, player_height};
+    player->rec = (Rectangle){player->pos.x - player_width/2, player->pos.y - player_height/2, player_width, player_height};
 
 }
 
 void axeUpdate(Player *player){
     switch (player->axe.state){
         case HOLDING:
-            player->axe.pos = (Vector2){player->pos.x + 32.5, player->pos.y + 32.5};
+
+            //Setting axe position based on mousePos
+            Vector2 mouseDirection = {mousePos.x - player->pos.x, mousePos.y - player->pos.y};
+            mouseDirection = Vector2Normalize(mouseDirection);
+            double angle = atan2(mouseDirection.y, mouseDirection.x);
+            player->axe.pos = (Vector2){player->pos.x+ cosf(angle) * axeHoverRadius, player->pos.y + 10 + sinf(angle) * axeHoverRadius};
+
+
             if(IsMouseButtonPressed(MOUSE_BUTTON_LEFT)){
                 player->axe.attackPos = mousePos;
                 player->axe.dir = (Vector2){player->axe.attackPos.x - player->axe.rec.x, player->axe.attackPos.y - player->axe.rec.y};
@@ -162,17 +174,16 @@ void axeUpdate(Player *player){
     }
 
     //Update axe rec
-    player->axe.rec = (Rectangle){player->axe.pos.x, player->axe.pos.y, 25, 25};
+    player->axe.rec = (Rectangle){player->axe.pos.x - axeWidth/2,player->axe.pos.y - axeHeight/2, axeWidth, axeHeight};
 }
 
 void playerDraw(Player *player){
     
 
-    if(player->axe.state != 0){
+    //if(player->axe.state != 0){
         DrawRectangleRec(player->axe.rec, BLUE);
-    }
+    //}
     
-    DrawRectangle(player->rec.x, player->rec.y - 30, player->rec.width * (player->health/player->baseHealth), 25, BLUE);
 
     playAnimation(&player->playerIdleAnim, player->rec, 1, 0.15);
 
