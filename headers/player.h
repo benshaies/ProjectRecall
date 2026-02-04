@@ -4,9 +4,14 @@
 #include "animation.h"
 
     typedef enum{
-        IDLE,
+        NOTHING,
         PULLING_IN,
     }State;
+
+    typedef enum{
+        IDLE,
+        RUNNING,
+    }AnimState;
 
     typedef enum{
         HOLDING,
@@ -46,6 +51,10 @@
         //Animations
         Animation playerIdleAnim;
         Animation playerSideAnim;
+
+        //Animation related variables
+        int animationDir;
+        AnimState animState;
     }Player;
 
     void playerInit(Player *player);

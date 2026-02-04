@@ -24,7 +24,7 @@ void playerInit(Player *player){
     player->rec = (Rectangle){player->pos.x - player_width/2, player->pos.y - player_height/2, player_width, player_height};
     player->speed = 5.0f;
     player->dir = (Vector2){0,0};
-    player->state = IDLE;
+    player->state = NOTHING;
     player->health = 100.0f;
     player->baseHealth = 100.0f;
 
@@ -39,9 +39,12 @@ void playerInit(Player *player){
     player->axe.damage = 50;
 
     //Animations
-    animationInit(&player->playerIdleAnim, 0, playerIdleTexture, 16, 5, 0, 0);
-    animationInit(&player->playerSideAnim, 0, playerSideTexture, 16, 7, 0, 0);
+    animationInit(&player->playerIdleAnim, 0, playerIdleTexture, 16, 4, 0, 0);
+    animationInit(&player->playerSideAnim, 0, playerSideTexture, 16, 5, 0, 0);
 
+    //Aniamtion related variables
+    player->animationDir = 1;
+    player->animState = IDLE;
 
 }
 
@@ -54,14 +57,14 @@ void playerUpdate(Player *player){
 void playerMovement(Player *player){
     
     switch (player->state){
-        case IDLE:
+        case NOTHING:
             break;
         case PULLING_IN:
             player->dir = (Vector2){player->axe.pos.x - player->pos.x, player->axe.pos.y - player->pos.y};
             player->speed += 1;
 
             if(player->axe.state == HOLDING){
-                player->state = IDLE;
+                player->state = NOTHING;
                 player->speed = playerBaseSpeed;
             }
             break;
@@ -75,9 +78,11 @@ void playerMovement(Player *player){
         //Get input
         if(IsKeyDown(KEY_A)){
             player->dir.x -= 1;
+            player->animationDir = -1;
         }
         else if(IsKeyDown(KEY_D)){
             player->dir.x += 1;
+            player->animationDir = 1;
         }
 
         if(IsKeyDown(KEY_W)){
@@ -86,6 +91,14 @@ void playerMovement(Player *player){
         else if(IsKeyDown(KEY_S)){
             player->dir.y += 1;
         }
+    }
+    
+    //Update anim state
+    if(player->dir.x != 0 || player->dir.y != 0){
+        player->animState = RUNNING;
+    }
+    else{
+        player->animState = IDLE;
     }
 
     //Add direction to player but first normalize
@@ -105,15 +118,15 @@ void axeUpdate(Player *player){
     switch (player->axe.state){
         case HOLDING:
 
-            //Setting axe position based on mousePos
-            Vector2 mouseDirection = {mousePos.x - player->pos.x, mousePos.y - player->pos.y};
+            //Setting axe position based on mouse Pos
+            Vector2 mouseDirection = {worldMouse.x - player->pos.x, worldMouse.y - player->pos.y};
             mouseDirection = Vector2Normalize(mouseDirection);
             double angle = atan2(mouseDirection.y, mouseDirection.x);
             player->axe.pos = (Vector2){player->pos.x+ cosf(angle) * axeHoverRadius, player->pos.y + 10 + sinf(angle) * axeHoverRadius};
 
 
             if(IsMouseButtonPressed(MOUSE_BUTTON_LEFT)){
-                player->axe.attackPos = mousePos;
+                player->axe.attackPos = worldMouse;
                 player->axe.dir = (Vector2){player->axe.attackPos.x - player->axe.rec.x, player->axe.attackPos.y - player->axe.rec.y};
                 player->axe.dir = Vector2Normalize(player->axe.dir); 
                 player->axe.state = THROWN;
@@ -184,8 +197,17 @@ void playerDraw(Player *player){
         DrawRectangleRec(player->axe.rec, BLUE);
     //}
     
+    switch (player->animState){
+        case IDLE:
+            playAnimation(&player->playerIdleAnim, player->rec, player->animationDir, 0.25);
+            break;
+        
+        case RUNNING:
+            playAnimation(&player->playerSideAnim, player->rec, player->animationDir, 0.15);
+            break;
+    }
 
-    playAnimation(&player->playerIdleAnim, player->rec, 1, 0.15);
+    
 
 
 }

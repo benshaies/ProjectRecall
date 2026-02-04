@@ -28,7 +28,7 @@
 
     void enemyInit(Enemy enemy[], Vector2 playerPos);
 
-    void enemyUpdate(Enemy enemy[], Rectangle playerRec, Weapon axe);
+    bool enemyUpdate(Enemy enemy[], Rectangle playerRec, Weapon axe);
 
     void enemyDraw(Enemy enemy[]);
 

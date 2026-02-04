@@ -10,28 +10,26 @@ void enemyInit(Enemy enemy[], Vector2 playerPos){
             enemy[i].speed = 2.0f;
             enemy[i].dir = Vector2Normalize((Vector2){playerPos.x - enemy[i].pos.x, playerPos.y - enemy[i].pos.y});
             enemy[i].active = true;
-            enemy[i].health = 100;
+            enemy[i].health = GetRandomValue(100, 300);
             enemy[i].baseHealth = 100.0f;
             enemy[i].state = NOT_HIT;
             enemy[i].knockbackDir = (Vector2){0,0};
-            enemy[i].color = GREEN;
+            enemy[i].color = RED;
+            
             enemy[i].hitFrameCount = 0;
             break;
         }
     }
 }
 
-void enemyUpdate(Enemy enemy[], Rectangle playerRec, Weapon axe){
+bool enemyUpdate(Enemy enemy[], Rectangle playerRec, Weapon axe){
     for(int i = 0; i < ENEMY_NUM; i++){
         if(enemy[i].active){
-
-            
 
             enemy[i].dir = Vector2Normalize((Vector2){playerRec.x - enemy[i].pos.x, playerRec.y - enemy[i].pos.y});
             enemy[i].pos.x += enemy[i].dir.x * enemy[i].speed;
             enemy[i].pos.y += enemy[i].dir.y * enemy[i].speed;
             enemy[i].rec = (Rectangle){enemy[i].pos.x, enemy[i].pos.y, 50, 50};
-        
 
             //Enemy hit check (Only acitvates if enemy isnt currently hit) 
             //1 = THROWN
@@ -39,10 +37,10 @@ void enemyUpdate(Enemy enemy[], Rectangle playerRec, Weapon axe){
             if(CheckCollisionRecs(enemy[i].rec, axe.rec) && enemy[i].state == NOT_HIT && (axe.state == 1 || axe.state == 3)) {
                 enemy[i].knockbackDir = Vector2Normalize(axe.dir);
 
-                enemy[i].color = WHITE;
+                enemy[i].color = BLACK;
                 enemy[i].health -= axe.damage;
                 enemy[i].state = HIT;
-
+                return true;
             }
 
             //Add knockback to enemy
@@ -56,13 +54,10 @@ void enemyUpdate(Enemy enemy[], Rectangle playerRec, Weapon axe){
                     enemy[i].state = IMMUNE;
                     enemy[i].hitFrameCount = 0;
                 }
-                
-
             }
 
             //Enemy is hit but immune now
             if(enemy[i].state == IMMUNE){
-                enemy[i].color = RED;
                 if(!CheckCollisionRecs(enemy[i].rec, axe.rec)){
                     enemy[i].state = NOT_HIT;
                 }
@@ -71,7 +66,7 @@ void enemyUpdate(Enemy enemy[], Rectangle playerRec, Weapon axe){
             //If axe and enemy not colliding, resets state
             if(!CheckCollisionRecs(enemy[i].rec,axe.rec) && enemy[i].state != IMMUNE){
                 enemy[i].state = NOT_HIT;
-                enemy[i].color = GREEN;
+                enemy[i].color = RED;
             }
 
             //Remove enemy once health is 0
@@ -82,10 +77,9 @@ void enemyUpdate(Enemy enemy[], Rectangle playerRec, Weapon axe){
 
             //Check Collision with player
             if(CheckCollisionRecs(enemy[i].rec, playerRec)){
-                //CloseWindow();
+                //·CloseWindow();
             }
 
-        
         }
     }
 }
@@ -100,7 +94,7 @@ void enemyDraw(Enemy enemy[]){
         if(enemy[i].active){
             DrawRectangleRec(enemy[i].rec, enemy[i].color);
 
-            DrawRectangle(enemy[i].rec.x, enemy[i].rec.y - 50, (int)(enemy[i].rec.width * (enemy[i].health/enemy[i].baseHealth)), 20, WHITE);
+            DrawRectangle(enemy[i].rec.x, enemy[i].rec.y - 50, (int)(enemy[i].rec.width * (enemy[i].health/enemy[i].baseHealth)), 20, BLACK);
         }
     }
 }

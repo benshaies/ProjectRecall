@@ -3,6 +3,7 @@
 #include "../headers/player.h"
 #include "../headers/enemy.h"
 #include "../headers/textures.h"
+#include "raymath.h"
 
 const int GAME_WIDTH = 1280;
 const int GAME_HEIGHT = 720;
@@ -13,25 +14,70 @@ Game game;
 Player player;
 
 Vector2 mousePos;
+Vector2 worldMouse;
 
 Enemy enemy[ENEMY_NUM];
 
 bool startGame = false;
 
+Camera2D camera;
+
+int screenShake = 0;
+int screenShakeFrameBase = 10;
+int screenShakeValue = 6;
+
+float hitStopTime = 0.03;
+float hitStopTimer = 0;
+
 void gameInit(){
     InitWindow(GAME_WIDTH, GAME_HEIGHT, "Project Recall");  
     SetTargetFPS(60);
 
+    texturesLoad();
+
     target = LoadRenderTexture(GAME_WIDTH, GAME_HEIGHT);
     SetTextureFilter(target.texture, TEXTURE_FILTER_POINT); 
-
-    texturesLoad();
 
     game.enemySpawnTimer = 0;
 
     playerInit(&player);
     // /enemyInit(enemy, player.pos);
+
+    camera.offset = (Vector2){GAME_WIDTH/2, GAME_HEIGHT/2};
+    camera.target = player.pos;
+    camera.zoom = 1.0f;
 }
+
+void cameraShake(){
+    if(screenShake > 0){
+        screenShake--;
+        camera.offset = (Vector2){camera.offset.x + GetRandomValue(-screenShakeValue,screenShakeValue), camera.offset.y + GetRandomValue(-screenShakeValue,screenShakeValue)};
+    }
+    else{
+        //camera.offset = (Vector2){GAME_WIDTH/2, GAME_HEIGHT/2};
+        camera.offset.x = Lerp(camera.offset.x, GAME_WIDTH/2, 5* GetFrameTime());
+        camera.offset.y = Lerp(camera.offset.y, GAME_HEIGHT/2, 5 * GetFrameTime());
+    }
+}
+
+void updateCamera(){
+
+    Vector2 mouseDir = { worldMouse.x - player.pos.x, worldMouse.y - player.pos.y };
+    mouseDir = Vector2Normalize(mouseDir);
+    mouseDir = Vector2Scale(mouseDir, 80);
+
+    Vector2 desiredTarget = {
+        player.pos.x + mouseDir.x,
+        player.pos.y + mouseDir.y
+    };
+
+    camera.target.x = Lerp(camera.target.x, desiredTarget.x, 5 * GetFrameTime());
+    camera.target.y = Lerp(camera.target.y, desiredTarget.y, 5 * GetFrameTime());
+
+    cameraShake();
+
+}
+
 
 void gameSetFullscreen(){
     if(IsKeyPressed(KEY_F11)){
@@ -39,20 +85,32 @@ void gameSetFullscreen(){
     }
 }
 
+
+
 void gameUpdate(){
     gameSetFullscreen();
 
-    playerUpdate(&player);
+    if(hitStopTimer <= 0){
+        playerUpdate(&player);
+        updateCamera();
 
-    if(IsKeyPressed(KEY_TAB)){
-        startGame = !startGame;
+        if(IsKeyPressed(KEY_TAB)){
+            startGame = !startGame;
+        }
+        if(startGame){
+            spawnEnemies();
+        }
+        
+        //Returns true if hit, starts screenshake
+        if(enemyUpdate(enemy, player.rec, player.axe)){
+            screenShake = screenShakeFrameBase;
+            hitStopTimer = hitStopTime;
+        }
     }
-    if(startGame){
-        spawnEnemies();
+    else{
+        hitStopTimer -= GetFrameTime();
     }
     
-
-    enemyUpdate(enemy, player.rec, player.axe);
 
 }
 
@@ -96,6 +154,7 @@ void gameResolutionDraw(){
 
         mousePos.x = (mousePos.x - offsetX) / scale;
         mousePos.y = (mousePos.y - offsetY) / scale;
+        worldMouse = GetScreenToWorld2D(mousePos, camera);
 
 
     EndDrawing();
@@ -104,11 +163,16 @@ void gameResolutionDraw(){
 void gameDraw(){
     BeginTextureMode(target);
 
-        ClearBackground(BLACK);
+        ClearBackground(WHITE);
 
-        playerDraw(&player);
-        enemyDraw(enemy);
+        BeginMode2D(camera);
 
+            playerDraw(&player);
+            enemyDraw(enemy); 
+
+        EndMode2D();
+
+        
     
     EndTextureMode();
 
