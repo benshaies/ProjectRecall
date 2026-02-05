@@ -4,6 +4,8 @@
 #include "../headers/enemy.h"
 #include "../headers/textures.h"
 #include "raymath.h"
+#include "../headers/arena.h"
+#include "stdio.h"
 
 const int GAME_WIDTH = 1280;
 const int GAME_HEIGHT = 720;
@@ -23,11 +25,15 @@ bool startGame = false;
 Camera2D camera;
 
 int screenShake = 0;
-int screenShakeFrameBase = 10;
+int screenShakeFrameBase = 6;
 int screenShakeValue = 6;
 
 float hitStopTime = 0.03;
 float hitStopTimer = 0;
+
+//Level variables
+const char *fileName = "../arena/arena.csv";
+
 
 void gameInit(){
     InitWindow(GAME_WIDTH, GAME_HEIGHT, "Project Recall");  
@@ -38,14 +44,17 @@ void gameInit(){
     target = LoadRenderTexture(GAME_WIDTH, GAME_HEIGHT);
     SetTextureFilter(target.texture, TEXTURE_FILTER_POINT); 
 
+    //Loads csv values into array
+    csvToArray(game.levelArray, fileName);
+    
+
     game.enemySpawnTimer = 0;
 
     playerInit(&player);
-    // /enemyInit(enemy, player.pos);
 
     camera.offset = (Vector2){GAME_WIDTH/2, GAME_HEIGHT/2};
     camera.target = player.pos;
-    camera.zoom = 1.0f;
+    camera.zoom = 0.75f;
 }
 
 void cameraShake(){
@@ -71,8 +80,8 @@ void updateCamera(){
         player.pos.y + mouseDir.y
     };
 
-    camera.target.x = Lerp(camera.target.x, desiredTarget.x, 5 * GetFrameTime());
-    camera.target.y = Lerp(camera.target.y, desiredTarget.y, 5 * GetFrameTime());
+    camera.target.x = (Lerp(camera.target.x, desiredTarget.x, 10 * GetFrameTime()));
+    camera.target.y = (Lerp(camera.target.y, desiredTarget.y, 10 * GetFrameTime()));
 
     cameraShake();
 
@@ -167,12 +176,12 @@ void gameDraw(){
 
         BeginMode2D(camera);
 
+            drawLevel(game.levelArray);
             playerDraw(&player);
             enemyDraw(enemy); 
 
-        EndMode2D();
 
-        
+        EndMode2D();
     
     EndTextureMode();
 

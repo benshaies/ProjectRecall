@@ -2,7 +2,7 @@
 #define TEXTURES_H
 #include "raylib.h"
 
-extern Texture2D playerIdleTexture, playerSideTexture;
+extern Texture2D playerIdleTexture, playerSideTexture, levelTilesetTexture;
 
 void texturesLoad();
 
