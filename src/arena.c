@@ -4,8 +4,8 @@
 #include "raylib.h"
 #include "../headers/textures.h"
 
-const int tileSetWidth = 3;
-const int tileSetHeight = 1;
+const int tileSetWidth = 8;
+const int tileSetHeight = 8;
 
 void csvToArray(int array[][LEVEL_WIDTH], const char *filename){
 

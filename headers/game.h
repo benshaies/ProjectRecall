@@ -9,6 +9,7 @@
     typedef struct{
         float enemySpawnTimer;
         int levelArray[LEVEL_HEIGHT][LEVEL_WIDTH];
+        int propsArray[LEVEL_HEIGHT][LEVEL_WIDTH];
     }Game;
 
     

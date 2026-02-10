@@ -2,7 +2,7 @@
 
 # Build directories
 /build/
-/build-windows/
+/build-win/
 /bin/
 /obj/
 /CMakeFiles/
@@ -33,3 +33,4 @@ Thumbs.db
 # Misc
 *.user
 *.tmp
+*.zip

@@ -26,13 +26,16 @@ Camera2D camera;
 
 int screenShake = 0;
 int screenShakeFrameBase = 6;
-int screenShakeValue = 6;
+int screenShakeValue = 7;
 
-float hitStopTime = 0.03;
+float hitStopTime = 0.025;
 float hitStopTimer = 0;
 
+float enemySpawnTime = 3.5f;
+
 //Level variables
-const char *fileName = "../arena/arena.csv";
+const char *fileName = "../arena/arena_walls.csv";
+const char *propsFileName = "../arena/arena_props.csv";
 
 
 void gameInit(){
@@ -44,8 +47,11 @@ void gameInit(){
     target = LoadRenderTexture(GAME_WIDTH, GAME_HEIGHT);
     SetTextureFilter(target.texture, TEXTURE_FILTER_POINT); 
 
+    HideCursor();
+
     //Loads csv values into array
     csvToArray(game.levelArray, fileName);
+    csvToArray(game.propsArray, propsFileName);
     
 
     game.enemySpawnTimer = 0;
@@ -54,7 +60,7 @@ void gameInit(){
 
     camera.offset = (Vector2){GAME_WIDTH/2, GAME_HEIGHT/2};
     camera.target = player.pos;
-    camera.zoom = 0.75f;
+    camera.zoom = 0.8f;
 }
 
 void cameraShake(){
@@ -111,7 +117,7 @@ void gameUpdate(){
         }
         
         //Returns true if hit, starts screenshake
-        if(enemyUpdate(enemy, player.rec, player.axe)){
+        if(enemyUpdate(enemy, player.rec, player.axe, player.pos)){
             screenShake = screenShakeFrameBase;
             hitStopTimer = hitStopTime;
         }
@@ -125,7 +131,7 @@ void gameUpdate(){
 
 void spawnEnemies(){
     game.enemySpawnTimer += GetFrameTime();
-    if(game.enemySpawnTimer > 1.5){
+    if(game.enemySpawnTimer >= enemySpawnTime){
         enemyInit(enemy, player.pos);
         game.enemySpawnTimer = 0;
     }
@@ -172,17 +178,26 @@ void gameResolutionDraw(){
 void gameDraw(){
     BeginTextureMode(target);
 
-        ClearBackground(WHITE);
+        ClearBackground(BLACK);
+
+        
 
         BeginMode2D(camera);
-
+            
+            //Walls
             drawLevel(game.levelArray);
+            //Props
+            drawLevel(game.propsArray);
+
             playerDraw(&player);
             enemyDraw(enemy); 
 
 
         EndMode2D();
-    
+
+        
+        //Draw cursor
+        DrawTexturePro(cursorTexture, (Rectangle){0,0,16,16}, (Rectangle){mousePos.x, mousePos.y, 30, 30}, (Vector2){0,0}, 0.0f, WHITE); 
     EndTextureMode();
 
     gameResolutionDraw();

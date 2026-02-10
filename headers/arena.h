@@ -3,8 +3,8 @@
 #include "raylib.h"
 
 #define TILE_SIZE 100
-#define LEVEL_WIDTH 45
-#define LEVEL_HEIGHT 37
+#define LEVEL_WIDTH 31
+#define LEVEL_HEIGHT 34
 
     
 
