@@ -10,6 +10,9 @@
         float enemySpawnTimer;
         int levelArray[LEVEL_HEIGHT][LEVEL_WIDTH];
         int propsArray[LEVEL_HEIGHT][LEVEL_WIDTH];
+        int floorArray[FlOOR_HEIGHT][FLOOR_WIDTH];
+        Rectangle *colliderRecs;
+        int colliderCount;
     }Game;
 
     
@@ -25,5 +28,7 @@
     void gameDraw();
 
     void spawnEnemies();
+
+    void drawColliderRecs();
 
 #endif

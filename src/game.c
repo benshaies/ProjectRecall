@@ -6,6 +6,7 @@
 #include "raymath.h"
 #include "../headers/arena.h"
 #include "stdio.h"
+#include "stdlib.h"
 
 const int GAME_WIDTH = 1280;
 const int GAME_HEIGHT = 720;
@@ -21,6 +22,7 @@ Vector2 worldMouse;
 Enemy enemy[ENEMY_NUM];
 
 bool startGame = false;
+bool drawColliders = false;
 
 Camera2D camera;
 
@@ -36,6 +38,10 @@ float enemySpawnTime = 3.5f;
 //Level variables
 const char *fileName = "../arena/arena_walls.csv";
 const char *propsFileName = "../arena/arena_props.csv";
+const char *floorFileName = "../arena/arena_floor.csv";
+
+
+int temp = 0;
 
 
 void gameInit(){
@@ -52,7 +58,12 @@ void gameInit(){
     //Loads csv values into array
     csvToArray(game.levelArray, fileName);
     csvToArray(game.propsArray, propsFileName);
-    
+    csvToArray(game.floorArray, floorFileName);
+
+    //Create collision Recs
+    game.colliderCount = getWallAmount(game.levelArray);
+    game.colliderRecs = malloc(getWallAmount(game.levelArray) * sizeof(Rectangle));
+    createCollisionRecs(game.levelArray, game.colliderRecs);
 
     game.enemySpawnTimer = 0;
 
@@ -60,7 +71,7 @@ void gameInit(){
 
     camera.offset = (Vector2){GAME_WIDTH/2, GAME_HEIGHT/2};
     camera.target = player.pos;
-    camera.zoom = 0.8f;
+    camera.zoom = 0.75f;
 }
 
 void cameraShake(){
@@ -105,6 +116,7 @@ void gameSetFullscreen(){
 void gameUpdate(){
     gameSetFullscreen();
 
+
     if(hitStopTimer <= 0){
         playerUpdate(&player);
         updateCamera();
@@ -115,6 +127,10 @@ void gameUpdate(){
         if(startGame){
             spawnEnemies();
         }
+        if(IsKeyPressed(KEY_F1)){
+            drawColliders = !drawColliders;
+        }
+        
         
         //Returns true if hit, starts screenshake
         if(enemyUpdate(enemy, player.rec, player.axe, player.pos)){
@@ -184,21 +200,37 @@ void gameDraw(){
 
         BeginMode2D(camera);
             
+            //FLoor
+            drawFloor(game.floorArray);
             //Walls
             drawLevel(game.levelArray);
             //Props
             drawLevel(game.propsArray);
 
             playerDraw(&player);
-            enemyDraw(enemy); 
+            enemyDraw(enemy);
+
+            if(drawColliders){
+                ddrawColliderRecs();
+            }
+            
 
 
         EndMode2D();
 
         
+
+        
         //Draw cursor
-        DrawTexturePro(cursorTexture, (Rectangle){0,0,16,16}, (Rectangle){mousePos.x, mousePos.y, 30, 30}, (Vector2){0,0}, 0.0f, WHITE); 
+
+        DrawTexturePro(cursorTexture, (Rectangle){0,0,16,16}, (Rectangle){mousePos.x - 15, mousePos.y - 15, 30, 30}, (Vector2){0,0}, 0.0f, WHITE); 
     EndTextureMode();
 
     gameResolutionDraw();
+}
+
+void drawColliderRecs(){
+    for(int i = 0; i < game.colliderCount; i++){
+        DrawRectangleLinesEx(game.colliderRecs[i], 2.5f, RED);
+    }
 }

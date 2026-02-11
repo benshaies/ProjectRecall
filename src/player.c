@@ -114,6 +114,10 @@ void playerMovement(Player *player){
 
 }
 
+void playerCollisions(Player *player, int array[][LEVEL_WIDTH]){
+    
+}
+
 void axeUpdate(Player *player){
     switch (player->axe.state){
         case HOLDING:
@@ -193,9 +197,8 @@ void axeUpdate(Player *player){
 void playerDraw(Player *player){
     
 
-    //if(player->axe.state != 0){
-        DrawRectangleRec(player->axe.rec, BLUE);
-    //}
+    DrawRectangleRec(player->axe.rec, BLUE);
+
     
     switch (player->animState){
         case IDLE:

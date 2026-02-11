@@ -2,6 +2,7 @@
 #define PLAYER_H
 #include "raylib.h"
 #include "animation.h"
+#include "../headers/arena.h"
 
     typedef enum{
         NOTHING,
@@ -62,6 +63,8 @@
     void playerUpdate(Player *player);
 
     void playerMovement(Player *player);
+
+    void playerCollisions(Player *player, int array[][LEVEL_WIDTH]);
 
     void axeUpdate(Player *player);
 
