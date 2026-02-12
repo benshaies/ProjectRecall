@@ -2,7 +2,7 @@
 #define TEXTURES_H
 #include "raylib.h"
 
-extern Texture2D playerIdleTexture, playerSideTexture, levelTilesetTexture, enemyIdleTexture, enemyHitTexture, cursorTexture;
+extern Texture2D playerIdleTexture, playerSideTexture, levelTilesetTexture, enemyIdleTexture, enemyHitTexture, cursorTexture, axeThrowTexture;
 
 
 

@@ -34,6 +34,8 @@
 
         float damage;
 
+        Animation anim;
+
     }Weapon;
 
     typedef struct{
@@ -60,15 +62,14 @@
 
     void playerInit(Player *player);
 
-    void playerUpdate(Player *player);
+    void playerUpdate(Player *player, Rectangle rec[], int recNum);
 
     void playerMovement(Player *player);
 
-    void playerCollisions(Player *player, int array[][LEVEL_WIDTH]);
+    void playerCollisions(Player *player, Rectangle rec[], int recNum);
 
-    void axeUpdate(Player *player);
+    void axeUpdate(Player *player, Rectangle rec[], int recNum);
 
     void playerDraw(Player *player);
-
 
 #endif

@@ -3,6 +3,7 @@
 Texture2D playerIdleTexture, playerSideTexture, levelTilesetTexture;
 Texture2D enemyIdleTexture, enemyHitTexture;
 Texture2D cursorTexture;
+Texture2D axeThrowTexture;
 
 void texturesLoad(){
     playerIdleTexture = LoadTexture("../assets/playerIdle.png");
@@ -13,6 +14,8 @@ void texturesLoad(){
     enemyHitTexture = LoadTexture("../assets/enemyHit.png");
 
     cursorTexture = LoadTexture("../assets/cursor.png");
+
+    axeThrowTexture = LoadTexture("../assets/axeThrow.png");
 
     SetTextureFilter(levelTilesetTexture, TEXTURE_FILTER_POINT);
 
@@ -27,4 +30,6 @@ void texturesUnload(){
     UnloadTexture(enemyHitTexture);
 
     UnloadTexture(cursorTexture);
+
+    UnloadTexture(axeThrowTexture);
 }

@@ -7,8 +7,8 @@
 int player_width = 75;
 int player_height = 75;
 
-const int axeWidth = 25;
-const int axeHeight = 25;
+const int axeWidth = 50;
+const int axeHeight = 50;
 
 const int axeHoverRadius = 60;
 
@@ -18,6 +18,9 @@ const float axeSpeedIncrementThrown = 0.5;
 const float axeSpeedIncrementRecall = 0.75;
 
 const float playerBaseSpeed = 5.0f;
+
+//The collision rec for player
+Rectangle tempRec;
 
 void playerInit(Player *player){
     player->pos = (Vector2){1280/2, 720/2};
@@ -38,6 +41,8 @@ void playerInit(Player *player){
     player->axe.attackCheckRadius = 15.0;
     player->axe.damage = 50;
 
+    animationInit(&player->axe.anim, 0, axeThrowTexture, 16, 6, 0, 0);
+
     //Animations
     animationInit(&player->playerIdleAnim, 0, playerIdleTexture, 16, 4, 0, 0);
     animationInit(&player->playerSideAnim, 0, playerSideTexture, 16, 5, 0, 0);
@@ -48,10 +53,11 @@ void playerInit(Player *player){
 
 }
 
-void playerUpdate(Player *player){
+void playerUpdate(Player *player, Rectangle rec[], int recNum){
+    playerCollisions(player, rec, recNum);
     playerMovement(player);
 
-    axeUpdate(player);
+    axeUpdate(player, rec, recNum);
 }
 
 void playerMovement(Player *player){
@@ -114,11 +120,34 @@ void playerMovement(Player *player){
 
 }
 
-void playerCollisions(Player *player, int array[][LEVEL_WIDTH]){
-    
+void playerCollisions(Player *player, Rectangle rec[], int recNum){
+    for(int i = 0; i < recNum; i++){
+        if(CheckCollisionRecs(player->rec, rec[i])){
+
+            tempRec = GetCollisionRec(player->rec, rec[i]);
+
+            //Left side collision
+            if(tempRec.width < tempRec.height){
+                if(tempRec.x < player->pos.x){
+                player->pos.x += tempRec.width;
+                }
+                else if(tempRec.x > player->pos.x){
+                    player->pos.x -= tempRec.width;
+                }
+            }
+            else if(tempRec.height < tempRec.width){
+                if(tempRec.y > player->pos.y){
+                player->pos.y -= tempRec.height;
+                }
+                else if(tempRec.y < player->pos.y){
+                    player->pos.y += tempRec.height;
+                }
+            }
+        }
+    }
 }
 
-void axeUpdate(Player *player){
+void axeUpdate(Player *player, Rectangle rec[], int recNum){
     switch (player->axe.state){
         case HOLDING:
 
@@ -127,7 +156,6 @@ void axeUpdate(Player *player){
             mouseDirection = Vector2Normalize(mouseDirection);
             double angle = atan2(mouseDirection.y, mouseDirection.x);
             player->axe.pos = (Vector2){player->pos.x+ cosf(angle) * axeHoverRadius, player->pos.y + 10 + sinf(angle) * axeHoverRadius};
-
 
             if(IsMouseButtonPressed(MOUSE_BUTTON_LEFT)){
                 player->axe.attackPos = worldMouse;
@@ -151,6 +179,17 @@ void axeUpdate(Player *player){
                 player->axe.state = DONE_THROW;
 
                 player->axe.throwSpeed = axeBaseSpeed;
+            }
+
+            //Check collision with wall
+            for(int i = 0; i < recNum; i++){
+                if(CheckCollisionRecs(player->axe.rec, rec[i])){
+                    player->axe.attackPos = (Vector2){0,0};
+                    player->axe.dir = (Vector2){0,0};
+                    player->axe.state = DONE_THROW;
+
+                    player->axe.throwSpeed = axeBaseSpeed;
+                }
             }
 
             if(IsMouseButtonPressed(MOUSE_BUTTON_RIGHT)){
@@ -195,11 +234,18 @@ void axeUpdate(Player *player){
 }
 
 void playerDraw(Player *player){
-    
 
-    DrawRectangleRec(player->axe.rec, BLUE);
+    //DrawRectangleRec(player->axe.rec, BLUE);
 
-    
+    Rectangle drawRec = {player->axe.rec.x, player->axe.rec.y, player->axe.rec.width, player->axe.rec.height};
+
+    if(player->axe.state == THROWN || player->axe.state == RECALL){
+        playAnimation(&player->axe.anim, drawRec, 1, 0.15);
+    }
+    else{
+        drawAnimationFrame(&player->axe.anim, drawRec, 1, 0);
+    }
+
     switch (player->animState){
         case IDLE:
             playAnimation(&player->playerIdleAnim, player->rec, player->animationDir, 0.25);
@@ -209,8 +255,6 @@ void playerDraw(Player *player){
             playAnimation(&player->playerSideAnim, player->rec, player->animationDir, 0.15);
             break;
     }
-
-    
 
 
 }

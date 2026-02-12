@@ -118,7 +118,7 @@ void gameUpdate(){
 
 
     if(hitStopTimer <= 0){
-        playerUpdate(&player);
+        playerUpdate(&player, game.colliderRecs, game.colliderCount);
         updateCamera();
 
         if(IsKeyPressed(KEY_TAB)){
@@ -211,15 +211,12 @@ void gameDraw(){
             enemyDraw(enemy);
 
             if(drawColliders){
-                ddrawColliderRecs();
+                drawColliderRecs();
             }
             
 
 
         EndMode2D();
-
-        
-
         
         //Draw cursor
 

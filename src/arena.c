@@ -89,7 +89,14 @@ void createCollisionRecs(int array[][LEVEL_WIDTH], Rectangle rec[]){
         for(int x = 0; x < LEVEL_WIDTH; x++){
 
             if(isWallTile(array[y][x])){
-                rec[i] = (Rectangle){x*TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE};
+
+                //Bottom corner tiles
+                if(array[y][x] == 15 || array[y][x] == 13){
+                    rec[i] = (Rectangle){x*TILE_SIZE, y * TILE_SIZE + 70, TILE_SIZE, TILE_SIZE - 70};
+                }
+                else{
+                    rec[i] = (Rectangle){x*TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE};
+                }
                 i++;
             }
             
