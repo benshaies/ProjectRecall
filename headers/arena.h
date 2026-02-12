@@ -13,7 +13,7 @@
 
     void csvToArray(int array[][LEVEL_WIDTH], const char *filename);
 
-    void drawLevel(int array[][LEVEL_WIDTH]);
+    void drawLevel(int array[][LEVEL_WIDTH], int layer);
 
     void drawFloor(int array[][FLOOR_WIDTH]);
 

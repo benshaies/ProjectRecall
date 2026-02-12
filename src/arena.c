@@ -29,13 +29,42 @@ void csvToArray(int array[][LEVEL_WIDTH], const char *filename){
     fclose(file);
 }
 
-void drawLevel(int array[][LEVEL_WIDTH]){
+void drawLevel(int array[][LEVEL_WIDTH], int layer){
     for(int y = 0; y < LEVEL_HEIGHT; y++){
         for(int x = 0; x < LEVEL_WIDTH; x++){
             if(array[y][x] != -1){
+                
+                float rotation = 0.0f;
+                bool bottom = false;
+                bool rightSide = false;
+
+                //Prop layer
+                if(layer == 1){
+                    //Top walls
+                    if(y == 0){
+                        rotation = 0.0f;
+                    }
+                    //Bottom walls
+                    else if(y == 14){
+                        rotation = 180.0f;
+                        bottom = true;
+                    }
+                    //Left wall
+                    else if(x == 0){
+                        rotation = -90.0f; 
+                    }
+                    //Right wall
+                    else if(x == 27){
+                        rotation = 90.0f;
+                        rightSide = true;
+                    }
+
+                
+
+                }
                 Rectangle sourceRec = {(array[y][x] % tileSetWidth) * 16, (array[y][x]/tileSetHeight) * 16, 16, 16};
-                Rectangle destRec = {TILE_SIZE*x, TILE_SIZE*y, TILE_SIZE, TILE_SIZE};
-                DrawTexturePro(levelTilesetTexture, sourceRec, destRec, (Vector2){0,0}, 0.0f, WHITE);
+                Rectangle destRec = {TILE_SIZE*x + (rightSide ? 100 : 0), TILE_SIZE*y + (bottom ? 100 : 0), TILE_SIZE, TILE_SIZE};
+                DrawTexturePro(levelTilesetTexture, sourceRec, destRec, (Vector2){0,0}, rotation, WHITE);
             }
 
             

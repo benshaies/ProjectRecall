@@ -203,9 +203,9 @@ void gameDraw(){
             //FLoor
             drawFloor(game.floorArray);
             //Walls
-            drawLevel(game.levelArray);
+            drawLevel(game.levelArray, 0);
             //Props
-            drawLevel(game.propsArray);
+            drawLevel(game.propsArray, 1);
 
             playerDraw(&player);
             enemyDraw(enemy);
