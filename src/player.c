@@ -58,6 +58,7 @@ void playerUpdate(Player *player, Rectangle rec[], int recNum){
     playerMovement(player);
 
     axeUpdate(player, rec, recNum);
+
 }
 
 void playerMovement(Player *player){
@@ -235,16 +236,16 @@ void axeUpdate(Player *player, Rectangle rec[], int recNum){
 
 void playerDraw(Player *player){
 
+    Rectangle drawRec = {player->axe.rec.x, player->axe.rec.y, player->axe.rec.width , player->axe.rec.height};
+
+    float rotation = 0.0f;
+    if(IsKeyDown(KEY_RIGHT)){
+        rotation += 0.05;
+        CloseWindow();
+    }
+    DrawTexturePro(axeThrowTexture, (Rectangle){0,0,16,16}, drawRec, (Vector2){player->axe.rec.width/2, player->axe.rec.height/2}, rotation, WHITE );
     //DrawRectangleRec(player->axe.rec, BLUE);
-
-    Rectangle drawRec = {player->axe.rec.x, player->axe.rec.y, player->axe.rec.width, player->axe.rec.height};
-
-    if(player->axe.state == THROWN || player->axe.state == RECALL){
-        playAnimation(&player->axe.anim, drawRec, 1, 0.15);
-    }
-    else{
-        drawAnimationFrame(&player->axe.anim, drawRec, 1, 0);
-    }
+    //DrawCircleV(player->axe.pos, 5, BLACK);
 
     switch (player->animState){
         case IDLE:

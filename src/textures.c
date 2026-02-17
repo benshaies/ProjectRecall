@@ -15,7 +15,7 @@ void texturesLoad(){
 
     cursorTexture = LoadTexture("../assets/cursor.png");
 
-    axeThrowTexture = LoadTexture("../assets/axeThrow.png");
+    axeThrowTexture = LoadTexture("../assets/anchorBase.png");
 
     SetTextureFilter(levelTilesetTexture, TEXTURE_FILTER_POINT);
 

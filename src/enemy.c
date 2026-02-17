@@ -3,10 +3,21 @@
 #include "stdio.h"
 #include "../headers/textures.h"
 
+float distanceFromPlayerRadius = 200;
+
 void enemyInit(Enemy enemy[], Vector2 playerPos){
     for (int i = 0; i < ENEMY_NUM; i++){
         if(!enemy[i].active){
-            enemy[i].pos = (Vector2){GetRandomValue(playerPos.x - 1280, playerPos.x + 1280), GetRandomValue(playerPos.y - 720, playerPos.y + 720)};
+
+            //Deciding enemy Position
+            Vector2 enemySpawnPosition = {GetRandomValue(150, 2500), GetRandomValue(150, 1300)};
+            
+            
+            while(CheckCollisionCircleRec(playerPos, distanceFromPlayerRadius, (Rectangle){enemySpawnPosition.x, enemySpawnPosition.y, 50, 50})){
+                enemySpawnPosition = (Vector2){GetRandomValue(150, 2500), GetRandomValue(150, 1300)};
+            }
+
+            enemy[i].pos = enemySpawnPosition;
             enemy[i].rec = (Rectangle){enemy[i].pos.x, enemy[i].pos.y, 50, 50};
             enemy[i].speed = GetRandomValue(2,4);
             enemy[i].dir = Vector2Normalize((Vector2){playerPos.x - enemy[i].pos.x, playerPos.y - enemy[i].pos.y});
