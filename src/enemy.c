@@ -69,7 +69,7 @@ void enemyFollowPlayer(Enemy enemy[], Vector2 playerPos, int i){
     
 }   
 
-bool enemyUpdate(Enemy enemy[], Rectangle playerRec, Weapon axe, Vector2 playerPos){
+int enemyUpdate(Enemy enemy[], Rectangle playerRec, Weapon axe, Vector2 playerPos){
     for(int i = 0; i < ENEMY_NUM; i++){
         if(enemy[i].active){
 
@@ -91,7 +91,9 @@ bool enemyUpdate(Enemy enemy[], Rectangle playerRec, Weapon axe, Vector2 playerP
                 enemy[i].color = WHITE;
                 enemy[i].health -= axe.damage * damageMultiplier;
                 enemy[i].state = HIT;
-                return true;
+
+                return 1;
+                break;
             }
 
             //Add knockback to enemy
@@ -128,15 +130,17 @@ bool enemyUpdate(Enemy enemy[], Rectangle playerRec, Weapon axe, Vector2 playerP
 
             //Check Collision with player
             if(CheckCollisionRecs(enemy[i].rec, playerRec)){
-                //·CloseWindow();
+                return 2;
+                break;
             }
 
         }
     }
+    return -1;
 }
 
 void enemyCollisions(Enemy enemy[], Rectangle playerRec, int i){
-
+    
     
 }
 

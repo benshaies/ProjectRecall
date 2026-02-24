@@ -44,6 +44,8 @@ const char *floorFileName = "../arena/arena_floor.csv";
 int temp = 0;
 
 
+
+
 void gameInit(){
     InitWindow(GAME_WIDTH, GAME_HEIGHT, "Project Recall");  
     SetTargetFPS(60);
@@ -118,8 +120,6 @@ void gameUpdate(){
 
 
     if(hitStopTimer <= 0){
-        playerUpdate(&player, game.colliderRecs, game.colliderCount);
-        updateCamera();
 
         if(IsKeyPressed(KEY_TAB)){
             startGame = !startGame;
@@ -130,13 +130,22 @@ void gameUpdate(){
         if(IsKeyPressed(KEY_F1)){
             drawColliders = !drawColliders;
         }
-        
-        
-        //Returns true if hit, starts screenshake
-        if(enemyUpdate(enemy, player.rec, player.axe, player.pos)){
+    
+        int enemyUpdateReturn = enemyUpdate(enemy, player.rec, player.axe, player.pos);
+        //Returns 1 if enemy is hit to start camera shake and hitstop
+        //Returns 2 if player is hit
+        if(enemyUpdateReturn == 1){
             screenShake = screenShakeFrameBase;
             hitStopTimer = hitStopTime;
         }
+        else if(enemyUpdateReturn == 2){
+            screenShake = screenShakeFrameBase;
+            hitStopTimer = hitStopTime;
+        }
+
+        playerUpdate(&player, game.colliderRecs, game.colliderCount);
+        updateCamera();
+
     }
     else{
         hitStopTimer -= GetFrameTime();

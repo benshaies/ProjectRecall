@@ -32,11 +32,13 @@
         
     }Enemy;
 
+    
+
     void enemyInit(Enemy enemy[], Vector2 playerPos);
 
     void enemyFollowPlayer(Enemy enemy[], Vector2 playerPos, int i);
 
-    bool enemyUpdate(Enemy enemy[], Rectangle playerRec, Weapon axe, Vector2 playerPos);
+    int enemyUpdate(Enemy enemy[], Rectangle playerRec, Weapon axe, Vector2 playerPos);
 
     void enemyDraw(Enemy enemy[]);
 

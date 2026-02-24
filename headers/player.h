@@ -4,9 +4,12 @@
 #include "animation.h"
 #include "../headers/arena.h"
 
+
     typedef enum{
         NOTHING,
         PULLING_IN,
+        HURT,
+        IMMUNITY, 
     }State;
 
     typedef enum{
@@ -45,8 +48,8 @@
         float speed;
         Vector2 dir;
         State state;
-        float health;
-        float baseHealth;
+        int baseLives;
+        int lives;
 
         //Axe varaibles
         Weapon axe;
@@ -65,6 +68,8 @@
     void playerUpdate(Player *player, Rectangle rec[], int recNum);
 
     void playerMovement(Player *player);
+
+    void playerHit(Player *player);
 
     void playerCollisions(Player *player, Rectangle rec[], int recNum);
 

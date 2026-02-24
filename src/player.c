@@ -19,6 +19,9 @@ const float axeSpeedIncrementRecall = 0.75;
 
 const float playerBaseSpeed = 5.0f;
 
+int playerKnockbackFrames = 2;
+int playerKnockbackFramesBase = 2;
+
 //The collision rec for player
 Rectangle tempRec;
 
@@ -28,8 +31,8 @@ void playerInit(Player *player){
     player->speed = 5.0f;
     player->dir = (Vector2){0,0};
     player->state = NOTHING;
-    player->health = 100.0f;
-    player->baseHealth = 100.0f;
+    player->lives = 3;
+    player->baseLives = 3;
 
     //Weapon stuff
     player->axe.pos = (Vector2){player->pos.x, player->pos.y};
@@ -53,12 +56,15 @@ void playerInit(Player *player){
 
 }
 
+
 void playerUpdate(Player *player, Rectangle rec[], int recNum){
     playerCollisions(player, rec, recNum);
-    playerMovement(player);
 
+    playerMovement(player);
     axeUpdate(player, rec, recNum);
 
+
+    
 }
 
 void playerMovement(Player *player){
@@ -75,7 +81,12 @@ void playerMovement(Player *player){
                 player->speed = playerBaseSpeed;
             }
             break;
+        case HURT:
+            break;
 
+        case IMMUNITY:
+            player->state = NOTHING;
+            break;
     }
     if(player->axe.state != HOLDING && IsKeyPressed(KEY_SPACE)){
         player->state = PULLING_IN;
@@ -119,6 +130,12 @@ void playerMovement(Player *player){
     //Update rec
     player->rec = (Rectangle){player->pos.x - player_width/2, player->pos.y - player_height/2, player_width, player_height};
 
+}
+
+void playerHit(Player *player){
+    if(playerKnockbackFrames > 0){
+
+    }
 }
 
 void playerCollisions(Player *player, Rectangle rec[], int recNum){
@@ -238,14 +255,9 @@ void playerDraw(Player *player){
 
     Rectangle drawRec = {player->axe.rec.x, player->axe.rec.y, player->axe.rec.width , player->axe.rec.height};
 
-    float rotation = 0.0f;
-    if(IsKeyDown(KEY_RIGHT)){
-        rotation += 0.05;
-        CloseWindow();
-    }
-    DrawTexturePro(axeThrowTexture, (Rectangle){0,0,16,16}, drawRec, (Vector2){player->axe.rec.width/2, player->axe.rec.height/2}, rotation, WHITE );
-    //DrawRectangleRec(player->axe.rec, BLUE);
-    //DrawCircleV(player->axe.pos, 5, BLACK);
+    DrawTexturePro(axeThrowTexture, (Rectangle){0,0,16,16}, drawRec, (Vector2){0,0}, 0.0f, WHITE );
+    //DrawRectangleRec(player->axe.rec, BLUE);·
+    DrawCircleV(player->axe.pos, 5, BLACK);
 
     switch (player->animState){
         case IDLE:
