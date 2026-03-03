@@ -39,6 +39,8 @@
 
         Animation anim;
 
+        float currentDrawRotation;
+
     }Weapon;
 
     typedef struct{
@@ -50,6 +52,7 @@
         State state;
         int baseLives;
         int lives;
+        Vector2 knockbackDir;
 
         //Axe varaibles
         Weapon axe;
@@ -65,7 +68,7 @@
 
     void playerInit(Player *player);
 
-    void playerUpdate(Player *player, Rectangle rec[], int recNum);
+    void playerUpdate(Player *player, Rectangle rec[], int recNum, Vector2 enemyDir);
 
     void playerMovement(Player *player);
 

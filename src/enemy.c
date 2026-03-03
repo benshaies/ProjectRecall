@@ -4,6 +4,7 @@
 #include "../headers/textures.h"
 
 float distanceFromPlayerRadius = 200;
+float enemyMeleeAttackRadius = 100.0f;
 
 void enemyInit(Enemy enemy[], Vector2 playerPos){
     for (int i = 0; i < ENEMY_NUM; i++){
@@ -34,6 +35,15 @@ void enemyInit(Enemy enemy[], Vector2 playerPos){
             enemy[i].reachedFollowDir = false;
 
             animationInit(&enemy[i].anim, 0, enemyIdleTexture, 16, 4, 0, 0);
+
+            //Attack stuff
+            enemy[i].isAttacking = false;
+            enemy[i].attackRec = (Rectangle){0,0,0,0};
+            enemy[i].attackFrameBase = 60;
+            enemy[i].attackFrameTimer = 60;
+            enemy[i].attackCooldownBase = 2.0f;
+            enemy[i].attackCooldownTimer = 2.0f;
+            enemy[i].inAttackCooldown = false;
             break;
         }
     }
@@ -70,13 +80,30 @@ void enemyFollowPlayer(Enemy enemy[], Vector2 playerPos, int i){
 }   
 
 int enemyUpdate(Enemy enemy[], Rectangle playerRec, Weapon axe, Vector2 playerPos){
+    int returnValue = 0;
     for(int i = 0; i < ENEMY_NUM; i++){
         if(enemy[i].active){
 
-            enemyFollowPlayer(enemy, playerPos, i);
-            enemy[i].pos.x += enemy[i].dir.x * enemy[i].speed;
+            enemyAttackUpdate(enemy, playerPos, i);
+
+            //Update the attack cooldown
+            if(enemy[i].inAttackCooldown){
+                enemy[i].attackCooldownTimer -= GetFrameTime();
+
+                if(enemy[i].attackCooldownTimer <= 0){
+                    enemy[i].inAttackCooldown = false;
+                }
+            }
+
+            if(!enemy[i].isAttacking){
+                enemyFollowPlayer(enemy, playerPos, i);
+                 enemy[i].pos.x += enemy[i].dir.x * enemy[i].speed;
             enemy[i].pos.y += enemy[i].dir.y * enemy[i].speed;
             enemy[i].rec = (Rectangle){enemy[i].pos.x, enemy[i].pos.y, 50, 50};
+            }
+
+            
+           
 
             //Enemy hit check (Only acitvates if enemy isnt currently hit) 
             //1 = THROWN
@@ -92,7 +119,7 @@ int enemyUpdate(Enemy enemy[], Rectangle playerRec, Weapon axe, Vector2 playerPo
                 enemy[i].health -= axe.damage * damageMultiplier;
                 enemy[i].state = HIT;
 
-                return 1;
+                returnValue = -1;
                 break;
             }
 
@@ -106,6 +133,7 @@ int enemyUpdate(Enemy enemy[], Rectangle playerRec, Weapon axe, Vector2 playerPo
                 if(enemy[i].hitFrameCount >= 4){
                     enemy[i].state = IMMUNE;
                     enemy[i].hitFrameCount = 0;
+                
                 }
             }
 
@@ -127,21 +155,31 @@ int enemyUpdate(Enemy enemy[], Rectangle playerRec, Weapon axe, Vector2 playerPo
                 enemyDelete(enemy, i);
             }
 
+        }
+        
+    }
+    return returnValue;
+}
+    
 
-            //Check Collision with player
-            if(CheckCollisionRecs(enemy[i].rec, playerRec)){
-                return 2;
-                break;
-            }
 
+void enemyAttackUpdate(Enemy enemy[], Vector2 playerPos, int i){
+    if(!enemy[i].isAttacking && CheckCollisionCircleRec(playerPos, enemyMeleeAttackRadius, enemy[i].rec) && !enemy[i].inAttackCooldown){
+        enemy[i].isAttacking = true;
+        Vector2 dirToPlayer = Vector2Normalize((Vector2){playerPos.x - enemy[i].pos.x, playerPos.y - enemy[i].pos.y});
+        enemy[i].attackRec = (Rectangle){enemy[i].pos.x + dirToPlayer.x * 100, enemy[i].pos.y + dirToPlayer.y * 100, 50, 50};
+    }
+
+    if(enemy[i].isAttacking){
+        printf("ATTACKING");
+        enemy[i].attackFrameTimer--;
+
+        if(enemy[i].attackFrameTimer <= 0){
+            enemy[i].attackFrameTimer = enemy[i].attackFrameBase;
+            enemy[i].isAttacking = false;
+            enemy[i].inAttackCooldown = true;
         }
     }
-    return -1;
-}
-
-void enemyCollisions(Enemy enemy[], Rectangle playerRec, int i){
-    
-    
 }
 
 void enemyDraw(Enemy enemy[]){
@@ -150,6 +188,10 @@ void enemyDraw(Enemy enemy[]){
             //DrawRectangleRec(enemy[i].rec, enemy[i].color);
             Rectangle animRec = {enemy[i].rec.x - 25, enemy[i].rec.y - 25, enemy[i].rec.width + 50, enemy[i].rec.height + 50};
             
+            if(enemy[i].isAttacking){
+                DrawRectangleRec(enemy[i].attackRec, (Color){255,0,0, enemy[i].attackFrameTimer * 4});
+            }
+
             if(!enemy[i].state == HIT){
                 playAnimation(&enemy[i].anim, animRec, 1, 0.15);
             }

@@ -22,7 +22,7 @@ Vector2 worldMouse;
 Enemy enemy[ENEMY_NUM];
 
 bool startGame = false;
-bool drawColliders = false;
+bool debugMode = false;
 
 Camera2D camera;
 
@@ -33,6 +33,8 @@ int screenShakeValue = 7;
 float hitStopTime = 0.025;
 float hitStopTimer = 0;
 
+float playerHitStopTime = 0.025f;
+
 float enemySpawnTime = 3.5f;
 
 //Level variables
@@ -40,11 +42,7 @@ const char *fileName = "../arena/arena_walls.csv";
 const char *propsFileName = "../arena/arena_props.csv";
 const char *floorFileName = "../arena/arena_floor.csv";
 
-
 int temp = 0;
-
-
-
 
 void gameInit(){
     InitWindow(GAME_WIDTH, GAME_HEIGHT, "Project Recall");  
@@ -128,22 +126,18 @@ void gameUpdate(){
             spawnEnemies();
         }
         if(IsKeyPressed(KEY_F1)){
-            drawColliders = !drawColliders;
+            debugMode = !debugMode;
         }
     
         int enemyUpdateReturn = enemyUpdate(enemy, player.rec, player.axe, player.pos);
-        //Returns 1 if enemy is hit to start camera shake and hitstop
-        //Returns 2 if player is hit
-        if(enemyUpdateReturn == 1){
-            screenShake = screenShakeFrameBase;
-            hitStopTimer = hitStopTime;
-        }
-        else if(enemyUpdateReturn == 2){
+        Vector2 enemyDir= {0,0};
+        //Returns -1 if enemy is hit to start camera shake and hitstop
+        if(enemyUpdateReturn == -1){
             screenShake = screenShakeFrameBase;
             hitStopTimer = hitStopTime;
         }
 
-        playerUpdate(&player, game.colliderRecs, game.colliderCount);
+        playerUpdate(&player, game.colliderRecs, game.colliderCount, enemyDir);
         updateCamera();
 
     }
@@ -219,13 +213,29 @@ void gameDraw(){
             playerDraw(&player);
             enemyDraw(enemy);
 
-            if(drawColliders){
-                drawColliderRecs();
-            }
+            
             
 
 
         EndMode2D();
+
+        if(debugMode){
+                switch(player.state){
+                    case NOTHING:
+                        DrawText("NOTHING", 0,0, 50, GREEN);
+                        break;
+                    case PULLING_IN:
+                        DrawText("PULLING_IN", 0,0, 50, GREEN);
+                        break;
+                    case HURT:
+                        DrawText("HURT", 0,0, 50, GREEN);
+                        break;
+                    case IMMUNITY:
+                        DrawText("IMMUNITY", 0,0, 50, GREEN);
+                        break;
+                        
+                }
+            }
         
         //Draw cursor
 

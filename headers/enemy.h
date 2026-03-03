@@ -29,6 +29,14 @@
         bool reachedFollowDir;
 
         Animation anim;
+
+        bool isAttacking;
+        Rectangle attackRec;
+        int attackFrameTimer;
+        int attackFrameBase;
+        float attackCooldownTimer;
+        float attackCooldownBase;
+        bool inAttackCooldown;
         
     }Enemy;
 
@@ -39,6 +47,10 @@
     void enemyFollowPlayer(Enemy enemy[], Vector2 playerPos, int i);
 
     int enemyUpdate(Enemy enemy[], Rectangle playerRec, Weapon axe, Vector2 playerPos);
+
+    void enemyAttackUpdate(Enemy enemy[], Vector2 playerPos, int i);
+
+    void enemyCollisions(Enemy enemy[], int i);
 
     void enemyDraw(Enemy enemy[]);
 
