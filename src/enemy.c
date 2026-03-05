@@ -103,9 +103,6 @@ int enemyUpdate(Enemy enemy[], Rectangle playerRec, Weapon axe, Vector2 playerPo
                 enemy[i].rec = (Rectangle){enemy[i].pos.x, enemy[i].pos.y, 50, 50};
             }
 
-            
-           
-
             //Enemy hit check (Only acitvates if enemy isnt currently hit) 
             //1 = THROWN
             //2 = RECALL
@@ -161,8 +158,6 @@ int enemyUpdate(Enemy enemy[], Rectangle playerRec, Weapon axe, Vector2 playerPo
     }
     return returnValue;
 }
-    
-
 
 void enemyAttackUpdate(Enemy enemy[], Vector2 playerPos, int i){
     if(!enemy[i].isAttacking && CheckCollisionCircleRec(playerPos, enemyMeleeAttackRadius, enemy[i].rec) && !enemy[i].inAttackCooldown){
@@ -182,6 +177,10 @@ void enemyAttackUpdate(Enemy enemy[], Vector2 playerPos, int i){
     }
 }
 
+void enemyCollisions(Enemy enemy[], int i){
+    
+}
+
 void enemyDraw(Enemy enemy[]){
     for(int i = 0; i < ENEMY_NUM; i++){
         if(enemy[i].active){
@@ -193,7 +192,14 @@ void enemyDraw(Enemy enemy[]){
             }
 
             if(!enemy[i].state == HIT){
-                playAnimation(&enemy[i].anim, animRec, 1, 0.15);
+                int animDir;
+                if(enemy[i].dir.x >= 0){
+                    animDir = 1;
+                }
+                else if(enemy[i].dir.x < 0){
+                    animDir = -1;
+                }
+                playAnimation(&enemy[i].anim, animRec, animDir, 0.15);
             }
             else{
                 DrawTexturePro(enemyHitTexture, (Rectangle){0,0,16,16}, animRec, (Vector2){0,0}, 0.0f, WHITE);

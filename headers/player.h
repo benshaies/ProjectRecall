@@ -68,13 +68,13 @@
 
     void playerInit(Player *player);
 
-    void playerUpdate(Player *player, Rectangle rec[], int recNum, Rectangle enemyAttackRec, bool isEnemyAttacking);
+    void playerUpdate(Player *player, Rectangle rec[], int recNum, Rectangle enemyAttackRec, bool isEnemyAttacking, Vector2 enemyAttackingPos);
 
     void playerMovement(Player *player, Rectangle enemyAttackRec, bool isEnemyAttacking);
 
     void playerCollisions(Player *player, Rectangle rec[], int recNum);
 
-    bool checkPlayerHit(Player *player, Rectangle enemyAttackRec);
+    bool checkPlayerHit(Player *player, Rectangle enemyAttackRec, Vector2 enemyAttackingPos);
 
     void axeUpdate(Player *player, Rectangle rec[], int recNum);
 

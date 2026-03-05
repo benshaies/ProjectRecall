@@ -26,12 +26,18 @@ bool debugMode = false;
 
 Camera2D camera;
 
+//Normal screenshake and hitstop stuff
 int screenShake = 0;
 int screenShakeFrameBase = 6;
 int screenShakeValue = 7;
 
 float hitStopTime = 0.025;
 float hitStopTimer = 0;
+
+//Check for if player hit screenshake has happened yet
+bool playerScreenShakeStarted = false;
+float hitStopTimePlayer = 1.0f;
+
 
 float playerHitStopTime = 0.025f;
 
@@ -152,16 +158,23 @@ void gameUpdate(){
             hitStopTimer = hitStopTime;
         }
 
-        if(player.state == HURT){
+        //If player hurt and screenshake hasnt started, start it once
+        if(player.state == HURT && !playerScreenShakeStarted){
+            playerScreenShakeStarted = true;
             screenShake = screenShakeFrameBase;
             hitStopTimer = hitStopTime;
+        }
+
+        //Reset screenshake check variable if player isnt hurt anymore
+        if(player.state != HURT){
+            playerScreenShakeStarted = false;
         }
 
         int checkEnemyAttackReturn = checkEnemyAttack();
         //Player update trakes in enemy attack rectangle and also bool to see if any enemies are attacking 
         //the checkEnemyAttack function returns an index with the enemy attacking if one is, returns -1 otherwise
         //We use this index to pass in the proper attack rectangle and create a booleon to pass in too
-        playerUpdate(&player, game.colliderRecs, game.colliderCount, enemy[checkEnemyAttackReturn].attackRec, (checkEnemyAttackReturn != -1));
+        playerUpdate(&player, game.colliderRecs, game.colliderCount, enemy[checkEnemyAttackReturn].attackRec, (checkEnemyAttackReturn != -1), enemy[checkEnemyAttackReturn].pos);
         updateCamera();
 
 
@@ -223,8 +236,6 @@ void gameDraw(){
     BeginTextureMode(target);
 
         ClearBackground(BLACK);
-
-        
 
         BeginMode2D(camera);
             

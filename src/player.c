@@ -62,9 +62,8 @@ void playerInit(Player *player){
 }
 
 
-void playerUpdate(Player *player, Rectangle rec[], int recNum, Rectangle enemyAttackRec, bool isEnemyAttacking){
+void playerUpdate(Player *player, Rectangle rec[], int recNum, Rectangle enemyAttackRec, bool isEnemyAttacking, Vector2 enemyAttackingPos){
     playerCollisions(player, rec, recNum);
-
 
     playerMovement(player, enemyAttackRec, isEnemyAttacking);
 
@@ -72,7 +71,7 @@ void playerUpdate(Player *player, Rectangle rec[], int recNum, Rectangle enemyAt
 
     //If enemy is attacking, checks if player gets hit by the attack 
     if(isEnemyAttacking){
-        checkPlayerHit(player, enemyAttackRec);
+        checkPlayerHit(player, enemyAttackRec, enemyAttackingPos);
     }
     
 }
@@ -121,6 +120,7 @@ void playerMovement(Player *player, Rectangle enemyAttackRec, bool isEnemyAttack
     }
 
     if(player->state != PULLING_IN){
+        player->speed = playerBaseSpeed;
         //Get input
         if(IsKeyDown(KEY_A)){
             player->dir.x -= 1;
@@ -192,10 +192,10 @@ void playerCollisions(Player *player, Rectangle rec[], int recNum){
     }
 }
 
-bool checkPlayerHit(Player *player, Rectangle enemyAttackRec){
+bool checkPlayerHit(Player *player, Rectangle enemyAttackRec, Vector2 enemyAttackingPos){
     if(CheckCollisionRecs(enemyAttackRec, player->rec)){
         player->state = HURT;
-        player->knockbackDir = Vector2Normalize((Vector2){player->pos.x - enemyAttackRec.x + enemyAttackRec.width/2, player->pos.y - enemyAttackRec.y + enemyAttackRec.height/2});
+        player->knockbackDir = Vector2Normalize((Vector2){player->pos.x - enemyAttackingPos.x, player->pos.y - enemyAttackingPos.y});
         return true;
     }
     else{

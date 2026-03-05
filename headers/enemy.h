@@ -56,5 +56,4 @@
 
     void enemyDelete(Enemy enemy[], int i);
 
-
 #endif

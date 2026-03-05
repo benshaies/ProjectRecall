@@ -10,7 +10,7 @@ void texturesLoad(){
     playerSideTexture = LoadTexture("../assets/playerSide.png");
     levelTilesetTexture = LoadTexture("../assets/levelTileset.png");
 
-    enemyIdleTexture = LoadTexture("../assets/enemyIdle.png");
+    enemyIdleTexture = LoadTexture("../assets/enemyRunt.png");
     enemyHitTexture = LoadTexture("../assets/enemyHit.png");
 
     cursorTexture = LoadTexture("../assets/cursor.png");
