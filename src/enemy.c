@@ -6,7 +6,7 @@
 float distanceFromPlayerRadius = 200;
 float enemyMeleeAttackRadius = 100.0f;
 
-void enemyInit(Enemy enemy[], Vector2 playerPos){
+void enemyInit(Enemy enemy[], Vector2 playerPos, int type){
     for (int i = 0; i < ENEMY_NUM; i++){
         if(!enemy[i].active){
 
@@ -17,33 +17,40 @@ void enemyInit(Enemy enemy[], Vector2 playerPos){
             while(CheckCollisionCircleRec(playerPos, distanceFromPlayerRadius, (Rectangle){enemySpawnPosition.x, enemySpawnPosition.y, 50, 50})){
                 enemySpawnPosition = (Vector2){GetRandomValue(150, 2500), GetRandomValue(150, 1300)};
             }
-
+            enemy[i].type = type;
             enemy[i].pos = enemySpawnPosition;
             enemy[i].rec = (Rectangle){enemy[i].pos.x, enemy[i].pos.y, 50, 50};
             enemy[i].speed = GetRandomValue(2,4);
             enemy[i].dir = Vector2Normalize((Vector2){playerPos.x - enemy[i].pos.x, playerPos.y - enemy[i].pos.y});
             enemy[i].active = true;
-            enemy[i].health = GetRandomValue(100, 300);
             enemy[i].baseHealth = 100.0f;
             enemy[i].state = NOT_HIT;
             enemy[i].knockbackDir = (Vector2){0,0};
-            enemy[i].color = RED;
             
             enemy[i].hitFrameCount = 0;
 
             enemy[i].randomFollowDir = GetRandomValue(1,4);
             enemy[i].reachedFollowDir = false;
 
-            animationInit(&enemy[i].anim, 0, enemyIdleTexture, 16, 4, 0, 0);
+            
+            if(enemy[i].type == 1){ // Normal
+                animationInit(&enemy[i].anim, 0, enemyIdleTexture, 16, 4, 0, 0);
+                //Attack stuff
+                enemy[i].isAttacking = false;
+                enemy[i].attackRec = (Rectangle){0,0,0,0};
+                enemy[i].attackFrameBase = 60;
+                enemy[i].attackFrameTimer = 60;
+                enemy[i].attackCooldownBase = 2.0f;
+                enemy[i].attackCooldownTimer = 2.0f;
+                enemy[i].inAttackCooldown = false;
+            }
+            else if(enemy[i].type == 2){ //Exploes on death
 
-            //Attack stuff
-            enemy[i].isAttacking = false;
-            enemy[i].attackRec = (Rectangle){0,0,0,0};
-            enemy[i].attackFrameBase = 60;
-            enemy[i].attackFrameTimer = 60;
-            enemy[i].attackCooldownBase = 2.0f;
-            enemy[i].attackCooldownTimer = 2.0f;
-            enemy[i].inAttackCooldown = false;
+            }
+            else if(enemy[i].type == 3){ //Only hit by recall
+
+            }
+            
             break;
         }
     }
@@ -108,6 +115,7 @@ int enemyUpdate(Enemy enemy[], Rectangle playerRec, Weapon axe, Vector2 playerPo
             //1 = THROWN
             //2 = RECALL
             if(CheckCollisionRecs(enemy[i].rec, axe.rec) && enemy[i].state == NOT_HIT && (axe.state == 1 || axe.state == 3)) {
+                
                 float damageMultiplier = 1.0f;
                 if(axe.state == 3){
                     damageMultiplier = 1.5f;
@@ -161,21 +169,25 @@ int enemyUpdate(Enemy enemy[], Rectangle playerRec, Weapon axe, Vector2 playerPo
 }
 
 void enemyAttackUpdate(Enemy enemy[], Vector2 playerPos, int i){
-    if(!enemy[i].isAttacking && CheckCollisionCircleRec(playerPos, enemyMeleeAttackRadius, enemy[i].rec) && !enemy[i].inAttackCooldown){
+
+    if(enemy[i].type == 1){
+        if(!enemy[i].isAttacking && CheckCollisionCircleRec(playerPos, enemyMeleeAttackRadius, enemy[i].rec) && !enemy[i].inAttackCooldown){
         enemy[i].isAttacking = true;
         Vector2 dirToPlayer = Vector2Normalize((Vector2){playerPos.x - enemy[i].pos.x, playerPos.y - enemy[i].pos.y});
         enemy[i].attackRec = (Rectangle){enemy[i].pos.x + dirToPlayer.x * 100, enemy[i].pos.y + dirToPlayer.y * 100, 50, 50};
-    }
+        }
 
-    if(enemy[i].isAttacking){
-        enemy[i].attackFrameTimer--;
+        if(enemy[i].isAttacking){
+            enemy[i].attackFrameTimer--;
 
-        if(enemy[i].attackFrameTimer <= 0){
-            enemy[i].attackFrameTimer = enemy[i].attackFrameBase;
-            enemy[i].isAttacking = false;
-            enemy[i].inAttackCooldown = true;
+            if(enemy[i].attackFrameTimer <= 0){
+                enemy[i].attackFrameTimer = enemy[i].attackFrameBase;
+                enemy[i].isAttacking = false;
+                enemy[i].inAttackCooldown = true;
+            }
         }
     }
+    
 }
 
 void enemyCollisions(Enemy enemy[], Rectangle rec[], int recNum, int i){

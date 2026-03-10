@@ -37,12 +37,14 @@
         float attackCooldownTimer;
         float attackCooldownBase;
         bool inAttackCooldown;
+
+        int type;
         
     }Enemy;
 
     
 
-    void enemyInit(Enemy enemy[], Vector2 playerPos);
+    void enemyInit(Enemy enemy[], Vector2 playerPos, int type);
 
     void enemyFollowPlayer(Enemy enemy[], Vector2 playerPos, int i);
 

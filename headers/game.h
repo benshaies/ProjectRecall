@@ -6,12 +6,6 @@
     extern Vector2 mousePos;
     extern Vector2 worldMouse;
 
-    typedef enum{
-          NOT_STARTED,
-          WAVE_DISPLAY,
-          WAVE_ACTIVE,
-          WAVE_DONE,
-    }GameplayState;
 
     typedef struct{
         float enemySpawnTimer;
@@ -20,11 +14,6 @@
         int floorArray[FlOOR_HEIGHT][FLOOR_WIDTH];
         Rectangle *colliderRecs;
         int colliderCount;
-
-        int currentWave;
-
-        GameplayState playState;
-
     }Game;
 
     

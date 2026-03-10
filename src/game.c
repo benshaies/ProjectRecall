@@ -40,7 +40,7 @@ float hitStopTimePlayer = 1.0f;
 
 float playerHitStopTime = 0.025f;
 
-float enemySpawnTime = 3.5f;
+float enemySpawnTime = 2.5f;
 
 Rectangle enemyAttackRec;
 
@@ -54,9 +54,6 @@ int temp = 0;
 //Game wave system varaibles
 bool startGame = false;
 
-bool displayWaveNum = false;
-float waveDisplayTimer = 0.0f;
-float waveDisplayTimerBase = 3.0f;
 
 void gameInit(){
     InitWindow(GAME_WIDTH, GAME_HEIGHT, "Project Recall");  
@@ -86,8 +83,6 @@ void gameInit(){
     camera.offset = (Vector2){GAME_WIDTH/2, GAME_HEIGHT/2};
     camera.target = player.pos;
     camera.zoom = 0.75f;
-
-    game.currentWave = 1;
 }
 
 void cameraShake(){
@@ -140,23 +135,6 @@ int checkEnemyAttack(){
     return returnValue;
 }
 
-void updateWaveSystem(){
-    if(startGame){
-        
-        switch(game.playState){
-            case NOT_STARTED:
-                
-            case WAVE_DISPLAY:
-
-            case WAVE_ACTIVE:
-
-            case WAVE_DONE:
-
-        }
-        
-    }
-}
-
 void gameUpdate(){
     gameSetFullscreen();
 
@@ -168,11 +146,14 @@ void gameUpdate(){
         }
         //Simple debug enemy spawner
         if(IsKeyPressed(KEY_G)){
-            enemyInit(enemy, player.pos);
+            enemyInit(enemy, player.pos, 1);
         }
         if(IsKeyPressed(KEY_F1)){
             debugMode = !debugMode;
         }
+
+        //Update waves
+        updateWaveSystem();
         
 
         int enemyUpdateReturn = enemyUpdate(enemy, player.rec, player.axe, player.pos, game.colliderRecs, game.colliderCount);
@@ -195,11 +176,16 @@ void gameUpdate(){
         }
 
         int checkEnemyAttackReturn = checkEnemyAttack();
+
+        
         //Player update trakes in enemy attack rectangle and also bool to see if any enemies are attacking 
         //the checkEnemyAttack function returns an index with the enemy attacking if one is, returns -1 otherwise
         //We use this index to pass in the proper attack rectangle and create a booleon to pass in too
+
         playerUpdate(&player, game.colliderRecs, game.colliderCount, enemy[checkEnemyAttackReturn].attackRec, (checkEnemyAttackReturn != -1), enemy[checkEnemyAttackReturn].pos);
         updateCamera();
+
+        
 
 
     }
@@ -213,7 +199,7 @@ void gameUpdate(){
 void spawnEnemies(){
     game.enemySpawnTimer += GetFrameTime();
     if(game.enemySpawnTimer >= enemySpawnTime){
-        enemyInit(enemy, player.pos);
+        enemyInit(enemy, player.pos, 1);
         game.enemySpawnTimer = 0;
     }
 }
@@ -273,29 +259,26 @@ void gameDraw(){
             playerDraw(&player);
             enemyDraw(enemy);
 
-            
-            
-
-
         EndMode2D();
+        
 
         if(debugMode){
-                switch(player.state){
-                    case NOTHING:
-                        DrawText("NOTHING", 0,0, 50, GREEN);
-                        break;
-                    case PULLING_IN:
-                        DrawText("PULLING_IN", 0,0, 50, GREEN);
-                        break;
-                    case HURT:
-                        DrawText("HURT", 0,0, 50, GREEN);
-                        break;
-                    case IMMUNITY:
-                        DrawText("IMMUNITY", 0,0, 50, GREEN);
-                        break;
-                        
-                }
+            switch(player.state){
+                case NOTHING:
+                    DrawText("NOTHING", 0,0, 50, GREEN);
+                    break;
+                case PULLING_IN:
+                    DrawText("PULLING_IN", 0,0, 50, GREEN);
+                    break;
+                case HURT:
+                    DrawText("HURT", 0,0, 50, GREEN);
+                    break;
+                case IMMUNITY:
+                    DrawText("IMMUNITY", 0,0, 50, GREEN);
+                    break;
+                    
             }
+        }
         
         //Draw cursor
 
