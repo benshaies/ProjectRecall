@@ -6,6 +6,14 @@
     extern Vector2 mousePos;
     extern Vector2 worldMouse;
 
+    typedef enum{
+        MAIN_MENU,
+        PLAYING,
+        DEAD,
+        UPGRADE_SCREEN,
+        TESTING,
+    }GameState;
+
 
     typedef struct{
         float enemySpawnTimer;
@@ -14,6 +22,12 @@
         int floorArray[FlOOR_HEIGHT][FLOOR_WIDTH];
         Rectangle *colliderRecs;
         int colliderCount;
+
+        GameState state;
+
+        int score;
+        int enemiesKilled;
+        float timeSurvived;
     }Game;
 
     

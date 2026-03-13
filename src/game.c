@@ -7,6 +7,8 @@
 #include "../headers/arena.h"
 #include "stdio.h"
 #include "stdlib.h"
+#include "../headers/particles.h"
+#include <string.h>
 
 const int GAME_WIDTH = 1280;
 const int GAME_HEIGHT = 720;
@@ -56,16 +58,23 @@ bool startGame = false;
 //Health rectangles
 Rectangle healthRecs[3];
 
+//Particle variables
+ParticleSystem ps;
+bool playerRunParticleSpawnCheck = false;
+
 void gameInit(){
     InitWindow(GAME_WIDTH, GAME_HEIGHT, "Project Recall");  
     SetTargetFPS(60);
+
+    game.state = PLAYING;
+    memset(&ps, 0, sizeof(ParticleSystem));
 
     texturesLoad();
 
     target = LoadRenderTexture(GAME_WIDTH, GAME_HEIGHT);
     SetTextureFilter(target.texture, TEXTURE_FILTER_POINT); 
 
-    HideCursor();
+    //HideCursor();
 
     //Loads csv values into array
     csvToArray(game.levelArray, fileName);
@@ -89,6 +98,10 @@ void gameInit(){
     camera.offset = (Vector2){GAME_WIDTH/2, GAME_HEIGHT/2};
     camera.target = player.pos;
     camera.zoom = 0.75f;
+
+    game.score = 0;
+    game.enemiesKilled = 0;
+    game.timeSurvived = 0.0f;
 }
 
 void cameraShake(){
@@ -141,8 +154,15 @@ int checkEnemyAttack(){
     return returnValue;
 }
 
-void gameUpdate(){
+void updateScore(){
+    game.timeSurvived += GetFrameTime();
+
+    game.score = (game.timeSurvived * 2) + (game.enemiesKilled * 5);
+}
+
+void gamePlayingUpdate(){
     gameSetFullscreen();
+    updateScore();
 
     if(hitStopTimer <= 0){
 
@@ -153,6 +173,8 @@ void gameUpdate(){
             spawnEnemies();
         }
 
+
+
         //Simple debug enemy spawner
         if(IsKeyPressed(KEY_G)){
             enemyInit(enemy, player.pos, 2);
@@ -162,10 +184,14 @@ void gameUpdate(){
         }
 
         int enemyUpdateReturn = enemyUpdate(enemy, player.rec, player.axe, player.pos, game.colliderRecs, game.colliderCount);
-        //Returns -1 if enemy is hit to start camera shake and hitstop
-        if(enemyUpdateReturn == -1){
+        //Returns -1 if enemy is hit to start camera shake and hitstop, returns 1 if enemy is killed
+        if(enemyUpdateReturn == -1){ // Enemy hit
             screenShake = screenShakeFrameBase;
             hitStopTimer = hitStopTime;
+        }
+        //Enemy killed
+        else if(enemyUpdateReturn == 1){
+            game.enemiesKilled++;
         }
 
         //If player hurt and screenshake hasnt started, start it once
@@ -182,23 +208,50 @@ void gameUpdate(){
     
         int checkEnemyAttackReturn = checkEnemyAttack();
 
-        
         //Player update takes in enemy attack rectangle and also bool to see if any enemies are attacking 
         //the checkEnemyAttack function returns an index with the enemy attacking if one is, returns -1 otherwise
         //We use this index to pass in the proper attack rectangle and create a booleon to pass in too
-
         playerUpdate(&player, game.colliderRecs, game.colliderCount, enemy[checkEnemyAttackReturn].attackRec, (checkEnemyAttackReturn != -1), enemy[checkEnemyAttackReturn].pos);
         updateCamera();
 
-        
-
+        //Spawn in player particles
+        if(player.animState == RUNNING){
+            Vector2 trailStartPos = {player.pos.x + player.rec.width/2 - 5 + GetRandomValue(-5, 5), player.pos.y + player.rec.height/2 - 5 +  GetRandomValue(-5, 5)};
+            
+            if(!playerRunParticleSpawnCheck){
+                spawnParticles(&ps, trailStartPos, GetRandomValue(1,5) * 0.05, BROWN, (Vector2){-player.dir.x * GetRandomValue(1,2),GetRandomValue(-1, 3)}, 2.5f);
+                playerRunParticleSpawnCheck = true;
+            }
+            else playerRunParticleSpawnCheck = false;
+            
+        }
+        updateParticles(&ps);
 
     }
     else{
         hitStopTimer -= GetFrameTime();
     }
-    
+}
 
+void gameUpdate(){
+
+    switch (game.state){
+        case MAIN_MENU:
+            break;
+        case PLAYING:
+            gamePlayingUpdate();
+            break;
+        case DEAD:
+            break;
+        case UPGRADE_SCREEN:
+            break;
+        case TESTING:
+            if(IsMouseButtonDown(MOUSE_BUTTON_LEFT)){
+                spawnParticles(&ps, mousePos, 5.0f, WHITE, (Vector2){GetRandomValue(-3,3), -5}, 10.0f);
+            }
+            updateParticles(&ps);
+            break;
+    }
 }
 
 void spawnEnemies(){
@@ -247,11 +300,8 @@ void gameResolutionDraw(){
     EndDrawing();
 }
 
-void gameDraw(){
-    BeginTextureMode(target);
-
-        ClearBackground(BLACK);
-
+void gamePlayingDraw(){
+        
         BeginMode2D(camera);
             
             //FLoor
@@ -263,6 +313,8 @@ void gameDraw(){
 
             playerDraw(&player);
             enemyDraw(enemy);
+
+            drawParticles(&ps);
 
         EndMode2D();
 
@@ -281,6 +333,9 @@ void gameDraw(){
 
             DrawTexturePro(tex, (Rectangle){0,0,16,16}, healthRecs[i], (Vector2){0,0}, 0.0, WHITE);
         }
+
+        //Score display
+        DrawText((TextFormat("%d", game.score)), 1150, 5, 50, WHITE);
        
         
         
@@ -306,6 +361,28 @@ void gameDraw(){
         //Draw cursor
 
         DrawTexturePro(cursorTexture, (Rectangle){0,0,16,16}, (Rectangle){mousePos.x - 15, mousePos.y - 15, 30, 30}, (Vector2){0,0}, 0.0f, WHITE); 
+}
+
+void gameDraw(){
+    BeginTextureMode(target);
+
+        ClearBackground(BLACK);
+
+        switch (game.state){
+            case MAIN_MENU:
+                break;
+            case PLAYING:
+                gamePlayingDraw();
+                break;
+            case DEAD:
+                break;  
+            case UPGRADE_SCREEN:
+                break;
+            case TESTING:  
+                drawParticles(&ps);
+                break;
+        }
+
     EndTextureMode();
 
     gameResolutionDraw();

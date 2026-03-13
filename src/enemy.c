@@ -168,6 +168,7 @@ int enemyUpdate(Enemy enemy[], Rectangle playerRec, Weapon axe, Vector2 playerPo
             //Remove enemy once health is 0
             if(enemy[i].health <= 0){
                 enemyDelete(enemy, i);
+                returnValue = 1;
             }
 
         }

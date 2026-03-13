@@ -143,6 +143,7 @@ void playerMovement(Player *player, Rectangle enemyAttackRec, bool isEnemyAttack
     //Update anim state
     if(player->dir.x != 0 || player->dir.y != 0){
         player->animState = RUNNING;
+
     }
     else{
         player->animState = IDLE;

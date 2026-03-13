@@ -46,6 +46,7 @@ set(SOURCES
     ../src/textures.c
     ../src/animation.c
     ../src/arena.c
+    ../src/particles.c
 )
 
 # Create executable
