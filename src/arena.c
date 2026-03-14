@@ -62,7 +62,7 @@ void drawLevel(int array[][LEVEL_WIDTH], int layer){
                 
 
                 }
-                Rectangle sourceRec = {(array[y][x] % tileSetWidth) * 16, (array[y][x]/tileSetHeight) * 16, 16, 16};
+                Rectangle sourceRec = {(array[y][x] % tileSetWidth) * 16 + 0.5f, (array[y][x]/tileSetHeight) * 16 + 0.5f, 15.0f, 15.0f};
                 Rectangle destRec = {TILE_SIZE*x + (rightSide ? 100 : 0), TILE_SIZE*y + (bottom ? 100 : 0), TILE_SIZE, TILE_SIZE};
                 DrawTexturePro(levelTilesetTexture, sourceRec, destRec, (Vector2){0,0}, rotation, WHITE);
             }
@@ -76,7 +76,7 @@ void drawFloor(int array[][FLOOR_WIDTH]){
     for(int y = 0; y < FlOOR_HEIGHT; y++){
         for(int x = 0; x < FLOOR_WIDTH; x++){
             if(array[y][x] != -1){
-                Rectangle sourceRec = {(array[y][x] % tileSetWidth) * 16, (array[y][x]/tileSetHeight) * 16, 16, 16};
+                Rectangle sourceRec = {(array[y][x] % tileSetWidth) * 16 + 0.5f, (array[y][x]/tileSetHeight) * 16 + 0.5f, 15.0f, 15.0f};
                 Rectangle destRec = {TILE_SIZE*x, TILE_SIZE*y, TILE_SIZE, TILE_SIZE};
                 DrawTexturePro(levelTilesetTexture, sourceRec, destRec, (Vector2){0,0}, 0.0f, WHITE);
             }

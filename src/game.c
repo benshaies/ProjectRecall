@@ -35,6 +35,9 @@ int screenShakeValue = 7;
 float hitStopTime = 0.025;
 float hitStopTimer = 0;
 
+//Throwing boomerang screenshake
+int boomerangThrownScreenShake = 0;
+
 //Check for if player hit screenshake has happened yet
 bool playerScreenShakeStarted = false;
 float hitStopTimePlayer = 1.0f;
@@ -60,7 +63,15 @@ Rectangle healthRecs[3];
 
 //Particle variables
 ParticleSystem ps;
-bool playerRunParticleSpawnCheck = false;
+
+int playerRunParticleCheck = 0;
+Color playerTrailColor = {33, 19, 25, 255};
+
+int boomerangThrowParticleCheck = 0;
+Color boomerangTrailColor = {18, 78, 137, 255};
+Color boomerangTrailColor2 = {44, 232, 245, 255};
+
+Color enemyHitParticleColor = {162, 38, 51, 255};
 
 void gameInit(){
     InitWindow(GAME_WIDTH, GAME_HEIGHT, "Project Recall");  
@@ -130,6 +141,8 @@ void updateCamera(){
     camera.target.x = (Lerp(camera.target.x, desiredTarget.x, 10 * GetFrameTime()));
     camera.target.y = (Lerp(camera.target.y, desiredTarget.y, 10 * GetFrameTime()));
 
+    
+
     cameraShake();
 
 }
@@ -158,6 +171,44 @@ void updateScore(){
     game.timeSurvived += GetFrameTime();
 
     game.score = (game.timeSurvived * 2) + (game.enemiesKilled * 5);
+}
+
+void manageParticles(){
+    //Spawn in player particles
+    if(player.animState == RUNNING){
+        Vector2 trailStartPos;
+
+        if(player.animationDir == -1) trailStartPos = (Vector2){player.pos.x + player.rec.width/2 - 10 + GetRandomValue(-5, 5), player.pos.y + player.rec.height/2 - 10 +  GetRandomValue(-5, 5)};
+        else trailStartPos = (Vector2){player.pos.x - player.rec.width/2 + 10 + GetRandomValue(-5, 5), player.pos.y + player.rec.height/2 - 5 +  GetRandomValue(-5, 5)};
+        
+        //Only activates every other 3rd frame
+        if(playerRunParticleCheck == 2){
+            spawnParticles(&ps, trailStartPos, GetRandomValue(1,5) * 0.05, playerTrailColor, (Vector2){-player.dir.x * GetRandomValue(1,2),GetRandomValue(-1, 1)}, 2.5f);
+            playerRunParticleCheck = 0;
+        }
+        else playerRunParticleCheck++;
+    }
+
+    //Boomerang particles
+    if( (player.axe.state == THROWN || player.axe.state == RECALL)){
+        spawnParticles(&ps, player.axe.pos, GetRandomValue(1,3) * 0.15, boomerangTrailColor, (Vector2){-player.axe.dir.x * GetRandomValue(1,3), GetRandomValue(0,2)}, GetRandomValue(1,3));
+        spawnParticles(&ps, player.axe.pos, GetRandomValue(1,3) * 0.15, boomerangTrailColor2, (Vector2){-player.axe.dir.x * GetRandomValue(1,3), GetRandomValue(0,2)}, GetRandomValue(1,3));
+    }
+
+    //Enemy particles
+    for(int i = 0; i < ENEMY_NUM; i++){
+
+        if(!enemy[i].active)continue;;
+        if(enemy[i].state != HIT) continue;
+
+        spawnParticles(&ps, enemy[i].pos, GetRandomValue(1,3) * 0.33, enemyHitParticleColor, (Vector2){GetRandomValue(-10,10), GetRandomValue(-10,10)}, GetRandomValue(2,6));
+        spawnParticles(&ps, enemy[i].pos, GetRandomValue(1,3) * 0.33, enemyHitParticleColor, (Vector2){GetRandomValue(-10,10), GetRandomValue(-10,10)}, GetRandomValue(2,6));
+        spawnParticles(&ps, enemy[i].pos, GetRandomValue(1,3) * 0.33, enemyHitParticleColor, (Vector2){GetRandomValue(-10,10), GetRandomValue(-10,10)}, GetRandomValue(2,6));
+
+
+    }    
+
+    updateParticles(&ps);
 }
 
 void gamePlayingUpdate(){
@@ -205,7 +256,11 @@ void gamePlayingUpdate(){
         if(player.state != HURT){
             playerScreenShakeStarted = false;
         }
-    
+
+        //Start screenshakle if player throws boomerang
+        if(player.justThrown){
+            screenShake = boomerangThrownScreenShake;
+        }
         int checkEnemyAttackReturn = checkEnemyAttack();
 
         //Player update takes in enemy attack rectangle and also bool to see if any enemies are attacking 
@@ -214,18 +269,7 @@ void gamePlayingUpdate(){
         playerUpdate(&player, game.colliderRecs, game.colliderCount, enemy[checkEnemyAttackReturn].attackRec, (checkEnemyAttackReturn != -1), enemy[checkEnemyAttackReturn].pos);
         updateCamera();
 
-        //Spawn in player particles
-        if(player.animState == RUNNING){
-            Vector2 trailStartPos = {player.pos.x + player.rec.width/2 - 5 + GetRandomValue(-5, 5), player.pos.y + player.rec.height/2 - 5 +  GetRandomValue(-5, 5)};
-            
-            if(!playerRunParticleSpawnCheck){
-                spawnParticles(&ps, trailStartPos, GetRandomValue(1,5) * 0.05, BROWN, (Vector2){-player.dir.x * GetRandomValue(1,2),GetRandomValue(-1, 3)}, 2.5f);
-                playerRunParticleSpawnCheck = true;
-            }
-            else playerRunParticleSpawnCheck = false;
-            
-        }
-        updateParticles(&ps);
+        manageParticles();
 
     }
     else{
@@ -311,10 +355,12 @@ void gamePlayingDraw(){
             //Props
             drawLevel(game.propsArray, 1);
 
+            drawParticles(&ps);
+
             playerDraw(&player);
             enemyDraw(enemy);
 
-            drawParticles(&ps);
+            
 
         EndMode2D();
 

@@ -29,6 +29,9 @@ void updateParticles(ParticleSystem *ps){
         ps->pool[i].pos.x += ps->pool[i].velocity.x;
         ps->pool[i].pos.y += ps->pool[i].velocity.y;
 
+        ps->pool[i].velocity.x *= 0.92f;
+        ps->pool[i].velocity.y *= 0.92f;
+
         ps->pool[i].life -= GetFrameTime();
 
 

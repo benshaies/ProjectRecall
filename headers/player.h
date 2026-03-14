@@ -60,6 +60,7 @@
         //Animations
         Animation playerIdleAnim;
         Animation playerSideAnim;
+        bool justThrown;
 
         //Animation related variables
         int animationDir;

@@ -48,6 +48,7 @@ void playerInit(Player *player){
     player->axe.attackCheckRadius = 15.0;
     player->axe.damage = 50;
     player->axe.currentDrawRotation = 0.0f;
+    player->justThrown = false;
 
     animationInit(&player->axe.anim, 0, axeThrowTexture, 16, 4, 0, 0);
 
@@ -217,6 +218,7 @@ void axeUpdate(Player *player, Rectangle rec[], int recNum){
             player->axe.pos = (Vector2){player->pos.x+ cosf(angle) * axeHoverRadius, player->pos.y + 10 + sinf(angle) * axeHoverRadius};
 
             if(IsMouseButtonPressed(MOUSE_BUTTON_LEFT)){
+                player->justThrown = true;
                 player->axe.attackPos = worldMouse;
                 player->axe.dir = (Vector2){player->axe.attackPos.x - player->axe.rec.x, player->axe.attackPos.y - player->axe.rec.y};
                 player->axe.dir = Vector2Normalize(player->axe.dir); 
@@ -226,9 +228,9 @@ void axeUpdate(Player *player, Rectangle rec[], int recNum){
             break;
 
         case THROWN:
-
             player->axe.pos.x += player->axe.dir.x * player->axe.throwSpeed;
             player->axe.pos.y += player->axe.dir.y * player->axe.throwSpeed;
+            player->justThrown = false;
 
             player->axe.throwSpeed += axeSpeedIncrementThrown;
 
