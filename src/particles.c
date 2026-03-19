@@ -76,7 +76,8 @@ void drawParticles(ParticleSystem *ps){
 
         switch (ps->pool[i].type){
             case NORMAL:
-                DrawCircleV(ps->pool[i].pos, ps->pool[i].size, ps->pool[i].color);
+                //DrawCircleV(ps->pool[i].pos, ps->pool[i].size, ps->pool[i].color);
+                DrawRectangle(ps->pool[i].pos.x, ps->pool[i].pos.y, ps->pool[i].size, ps->pool[i].size, ps->pool[i].color);
                 break;
             case EXPANDING_RING:
                 DrawRing(ps->pool[i].pos, ps->pool[i].size - (ps->pool[i].ringThickness * (ps->pool[i].life/ps->pool[i].lifeMax)), ps->pool[i].size, 0, 360, 64, ps->pool[i].color);

@@ -113,7 +113,6 @@ void playerMovement(Player *player, Rectangle enemyAttackRec, bool isEnemyAttack
                 playerImmunityFrames = playerImmunityFramesBase;
 
             }
-            
            
             break;
     }
@@ -292,6 +291,11 @@ void axeUpdate(Player *player, Rectangle rec[], int recNum){
 
     //Update axe rec
     player->axe.rec = (Rectangle){player->axe.pos.x - axeWidth/2,player->axe.pos.y - axeHeight/2, axeWidth, axeHeight};
+}
+
+void deflectAxe(Player *player){
+    player->axe.dir.x *= -1;
+    player->axe.dir.y *= -1;
 }
 
 void playerDraw(Player *player){

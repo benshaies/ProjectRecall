@@ -3,6 +3,7 @@
 #include "stdio.h"
 #include "../headers/textures.h"
 
+
 float distanceFromPlayerRadius = 200;
 float enemyMeleeAttackRadius = 100.0f;
 
@@ -135,6 +136,9 @@ int enemyUpdate(Enemy enemy[], Rectangle playerRec, Weapon axe, Vector2 playerPo
                     enemy[i].state = HIT;
 
                     returnValue = -1;
+                }
+                else if(enemy[i].type == 2 && axe.state == THROWN){
+                    returnValue = 2;
                 }
                 
                 break;
