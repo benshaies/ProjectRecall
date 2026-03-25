@@ -16,26 +16,31 @@
     }Upgrades;
 
     typedef enum{
+        NOT_ACTIVE,
         OPENING,
         DONE_OPENING,
         SELECTED,
+        CLOSING,
     }UpgradeScreenState;
 
     typedef struct{
         bool isActive;
         Rectangle baseRec;
+        float openingProgress;
         Rectangle upgradeRecs[3];
+        bool isHovering[3];
         Upgrades upgrade[3];
-        int unavailableUpgrades[3];
         int upgradeLevels[NUMBER_OF_UPGRADES];
 
         UpgradeScreenState state;
     }UpgradeScreen;
 
 
-    void resetUpgrades(UpgradeScreen *up);
+    void upgradeStructInit(UpgradeScreen *up);
 
     void createUpgrades(UpgradeScreen *up);
+
+    void updateUpgradeScreen(UpgradeScreen *up, Vector2 mousePos);
 
     void drawUpgrades(UpgradeScreen *up);
     

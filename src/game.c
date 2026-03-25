@@ -87,7 +87,7 @@ void gameInit(){
     InitWindow(GAME_WIDTH, GAME_HEIGHT, "Project Recall");  
     SetTargetFPS(60);
 
-    game.state = TESTING;
+    game.state = PLAYING;
     memset(&ps, 0, sizeof(ParticleSystem));
 
     texturesLoad();
@@ -123,6 +123,8 @@ void gameInit(){
     game.score = 0;
     game.enemiesKilled = 0;
     game.timeSurvived = 0.0f;
+
+    upgradeStructInit(&upgradeScreen);
 }
 
 void cameraShake(){
@@ -317,12 +319,8 @@ void gamePlayingUpdate(){
     }
 }
 
-void gameUpgradeScreenUpdate(){
-
-}
-
 void gameUpgradeScreenDraw(){
-    DrawRectangleRec(baseRec, BLUE);
+    drawUpgrades(&upgradeScreen);
 }
 
 void gameUpdate(){
@@ -334,19 +332,21 @@ void gameUpdate(){
             gamePlayingUpdate();
             if(IsKeyPressed(KEY_U)){
                 game.state = UPGRADE_SCREEN;
+                upgradeScreen.state = OPENING;
+                createUpgrades(&upgradeScreen);
             }
             break;
         case DEAD:
             break;
         case UPGRADE_SCREEN:
-            gameUpgradeScreenUpdate();
+            updateUpgradeScreen(&upgradeScreen, mousePos);
             break;
         case TESTING:
-            if(IsKeyPressed(KEY_R)){
-                resetUpgrades(&upgradeScreen);
-            }
-            if(IsMouseButtonDown(MOUSE_BUTTON_LEFT)){
+            if(IsMouseButtonPressed(MOUSE_BUTTON_LEFT)){
                 createUpgrades(&upgradeScreen);
+                for(int i = 0; i < 3; i++){
+                    printf("%d\n", upgradeScreen.upgrade[i]);
+                }
             }
             updateParticles(&ps);
             break;
@@ -461,9 +461,7 @@ void gamePlayingDraw(){
             }
         }
         
-        //Draw cursor
-
-        DrawTexturePro(cursorTexture, (Rectangle){0,0,16,16}, (Rectangle){mousePos.x - 15, mousePos.y - 15, 30, 30}, (Vector2){0,0}, 0.0f, WHITE); 
+       
 }
 
 //DRAWING
@@ -489,7 +487,11 @@ void gameDraw(){
                 drawParticles(&ps);
                 break;
         }
+    
+     //Draw cursor
 
+        DrawTexturePro(cursorTexture, (Rectangle){0,0,16,16}, (Rectangle){mousePos.x - 15, mousePos.y - 15, 30, 30}, (Vector2){0,0}, 0.0f, WHITE); 
+        
     EndTextureMode();
 
     gameResolutionDraw();

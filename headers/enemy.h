@@ -30,7 +30,6 @@
         bool reachedFollowDir;
 
         Animation anim;
-        Animation attackAnim;
 
         bool isAttacking;
         Rectangle attackRec;

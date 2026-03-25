@@ -1,17 +1,31 @@
 #include "../headers/upgrade.h"
 #include "stdio.h"
+#include "../headers/textures.h"
 
 Rectangle finalBaseRec = {290, 160, 700, 400};
 
-void resetUpgrades(UpgradeScreen *up){
-    up->upgrade[0] = -1;
-    up->upgrade[1] = -1;
-    up->upgrade[2] = -1;
+void upgradeStructInit(UpgradeScreen *up){
+    up->isActive = false;
 
-    up->unavailableUpgrades[0] = -1;
-    up->unavailableUpgrades[1] = -1;
-    up->unavailableUpgrades[2] = -1;
+    up->baseRec = (Rectangle){290, 160, 700, 400};
+    up->openingProgress = 0.0f;  //from 0.0 - 1.0
+
+    up->upgradeRecs[0] = (Rectangle){310, 180, 206, 360};
+    up->upgradeRecs[1] = (Rectangle){536, 180, 206, 360};
+    up->upgradeRecs[2] = (Rectangle){762, 180, 206, 360};
+    up->isHovering[0] = false;
+    up->isHovering[1] = false;
+    up->isHovering[2] = false;
+
+
+    for(int i = 0; i < NUMBER_OF_UPGRADES; i++){
+        up->upgradeLevels[i] = 0;
+    }
+
+    up->state = NOT_ACTIVE;
+    
 }
+
 
 void createUpgrades(UpgradeScreen *up){
     int count = 0;
@@ -26,6 +40,52 @@ void createUpgrades(UpgradeScreen *up){
     }
 }
 
+void updateUpgradeScreen(UpgradeScreen *up, Vector2 mousePos){
+    switch (up->state){
+        case NOT_ACTIVE:
+            break;
+        case OPENING:
+            up->openingProgress += 4.0f * GetFrameTime();
+            if(up->openingProgress > 1.0f){
+                up->openingProgress = 1.0f;
+                up->state = DONE_OPENING;
+            }
+            break;
+        case DONE_OPENING:
+            for(int i = 0; i < 3; i++){
+                if(CheckCollisionPointRec(mousePos, up->upgradeRecs[i])){
+                    up->isHovering[i] = true;
+                }
+                else{
+                    up->isHovering[i] = false;
+                }
+            }
+
+        case SELECTED:
+
+        case CLOSING:
+
+    }
+}
+
 void drawUpgrades(UpgradeScreen *up){
 
+    if(up->state != NOT_ACTIVE){
+        
+        float w = up->baseRec.width * up->openingProgress;
+        float h = up->baseRec.height * up->openingProgress;
+        float cx = 290 + 700/2.0f;
+        float cy = 160 + 400/2.0f;
+        Rectangle animatedRec = {cx - w/2.0f, cy - h/2.0f, w, h};
+
+        DrawTexturePro(upgradeScreenBaseTexture, (Rectangle){0,0, 112, 64}, animatedRec, (Vector2){0,0}, 0.0f, WHITE);
+
+        if(up->state == DONE_OPENING){
+            for(int i = 0; i < 3; i++){
+                DrawTexturePro(upgradeTextures[up->upgrade[i]], (Rectangle){0,0,33,58}, up->upgradeRecs[i], (Vector2){0,0}, 0.0f, up->isHovering[i] ? YELLOW : WHITE);
+            }
+        }
+    }
+    
+    
 }

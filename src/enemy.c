@@ -46,12 +46,12 @@ void enemyInit(Enemy enemy[], Vector2 playerPos, int type){
             
             if(type == 1){ // Normal
                 animationInit(&enemy[i].anim, 0, enemyIdleTexture, 16, 4, 0, 0);
-                animationInit(&enemy[i].attackAnim, 0, enemyOneAttackTexture, 16, 7, 0, 0);
+
                 enemy[i].health = 150.0f;
             }
             else if(enemy[i].type == 2){ //Shield enemy
                 animationInit(&enemy[i].anim, 0, enemy2RunTexture, 16, 9, 0, 0);
-                animationInit(&enemy[i].attackAnim, 0, enemyOneAttackTexture, 16, 7, 0, 0);
+
                 enemy[i].health = 50.0f;
             }
             else if(enemy[i].type == 3){ //Explodes when dead
