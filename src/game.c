@@ -83,9 +83,13 @@ bool isBoomerangDeflected = false;
 Rectangle baseRec = {290, 160, 700, 400};
 UpgradeScreen upgradeScreen;
 
+Font font;
+
 void gameInit(){
     InitWindow(GAME_WIDTH, GAME_HEIGHT, "Project Recall");  
     SetTargetFPS(60);
+
+    font = LoadFont("../assets/font.otf");
 
     game.state = PLAYING;
     memset(&ps, 0, sizeof(ParticleSystem));
@@ -154,7 +158,6 @@ void updateCamera(){
     camera.target.y = (Lerp(camera.target.y, desiredTarget.y, 10 * GetFrameTime()));
 
     cameraShake();
-
 }
 
 
@@ -171,9 +174,7 @@ int checkEnemyAttack(){
         if(enemy[i].active && enemy[i].isAttacking){
             returnValue = i;
         }
-
     }
-
     return returnValue;
 }
 
@@ -181,8 +182,6 @@ void updateScore(){
     game.timeSurvived += GetFrameTime();
 
     game.score = (game.timeSurvived * 0.25) + (game.enemiesKilled * 10);
-
-
 }
 
 void manageParticles(){
@@ -320,7 +319,7 @@ void gamePlayingUpdate(){
 }
 
 void gameUpgradeScreenDraw(){
-    drawUpgrades(&upgradeScreen);
+    drawUpgrades(&upgradeScreen, font);
 }
 
 void gameUpdate(){
@@ -340,6 +339,13 @@ void gameUpdate(){
             break;
         case UPGRADE_SCREEN:
             updateUpgradeScreen(&upgradeScreen, mousePos);
+
+            if(upgradeScreen.selectedUpgrade != -1){
+                    if(applyPlayerUpgrade(&player, upgradeScreen.selectedUpgrade)){
+                        game.state = PLAYING;
+                        upgradeScreen.selectedUpgrade = -1;
+                    }
+                }
             break;
         case TESTING:
             if(IsMouseButtonPressed(MOUSE_BUTTON_LEFT)){
@@ -410,14 +416,10 @@ void gamePlayingDraw(){
             //Props
             drawLevel(game.propsArray, 1);
 
-            
-
             playerDraw(&player);
             enemyDraw(enemy);
 
             drawParticles(&ps);
-
-            
 
         EndMode2D();
 
@@ -440,9 +442,6 @@ void gamePlayingDraw(){
         //Score display
         DrawText((TextFormat("%d", game.score)), 1150, 5, 50, WHITE);
        
-        
-        
-
         if(debugMode){
             switch(player.state){
                 case NOTHING:
@@ -457,15 +456,11 @@ void gamePlayingDraw(){
                 case IMMUNITY:
                     DrawText("IMMUNITY", 0,0, 50, GREEN);
                     break;
-                    
             }
         }
-        
-       
 }
 
 //DRAWING
-
 void gameDraw(){
     BeginTextureMode(target);
 
@@ -488,7 +483,7 @@ void gameDraw(){
                 break;
         }
     
-     //Draw cursor
+        //Draw cursor
 
         DrawTexturePro(cursorTexture, (Rectangle){0,0,16,16}, (Rectangle){mousePos.x - 15, mousePos.y - 15, 30, 30}, (Vector2){0,0}, 0.0f, WHITE); 
         

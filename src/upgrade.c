@@ -5,7 +5,6 @@
 Rectangle finalBaseRec = {290, 160, 700, 400};
 
 void upgradeStructInit(UpgradeScreen *up){
-    up->isActive = false;
 
     up->baseRec = (Rectangle){290, 160, 700, 400};
     up->openingProgress = 0.0f;  //from 0.0 - 1.0
@@ -27,6 +26,8 @@ void upgradeStructInit(UpgradeScreen *up){
     }
 
     up->state = NOT_ACTIVE;
+
+    up->selectedUpgrade = -1;
     
 }
 
@@ -67,28 +68,36 @@ void updateUpgradeScreen(UpgradeScreen *up, Vector2 mousePos){
                         .height = up->baseUpgradeRecs[i].height + 40,
                         .width = up->baseUpgradeRecs[i].width + 40,
                     };
+                    
+                    //Player selected the upgrade
+                    if(up->isHovering[i] && IsMouseButtonPressed(MOUSE_BUTTON_LEFT)){
+                        up->selectedUpgrade = up->upgrade[i];
+                        up->state = SELECTED;
+                        break;
+                    }
                 }
                 else{
                     up->isHovering[i] = false;
-
                     //Reset the rec back
                     up->upgradeRecs[i] = (Rectangle){
                         .x = up->baseUpgradeRecs[i].x,
                         .y = up->baseUpgradeRecs[i].y,
                         .height = up->baseUpgradeRecs[i].height,
                         .width = up->baseUpgradeRecs[i].width,
-                    };   
+                    };
+                    
+                    
                 }
             }
-
+            break;
         case SELECTED:
-
-        case CLOSING:
+            up->state = NOT_ACTIVE;
+            break;
 
     }
 }
 
-void drawUpgrades(UpgradeScreen *up){
+void drawUpgrades(UpgradeScreen *up, Font font){
 
     if(up->state != NOT_ACTIVE){
         
@@ -104,7 +113,8 @@ void drawUpgrades(UpgradeScreen *up){
             for(int i = 0; i < 3; i++){
                 DrawTexturePro(upgradeTextures[up->upgrade[i]], (Rectangle){0,0,33,58}, up->upgradeRecs[i], (Vector2){0,0}, 0.0f, up->isHovering[i] ? (Color){254,231,97,255} : WHITE);
             }
-        }
+        } 
+
     }
     
     

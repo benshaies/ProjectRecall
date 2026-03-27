@@ -24,7 +24,6 @@
     }UpgradeScreenState;
 
     typedef struct{
-        bool isActive;
         Rectangle baseRec;
         float openingProgress;
         Rectangle upgradeRecs[3];
@@ -32,6 +31,8 @@
         bool isHovering[3];
         Upgrades upgrade[3];
         int upgradeLevels[NUMBER_OF_UPGRADES];
+
+        Upgrades selectedUpgrade;
 
         UpgradeScreenState state;
     }UpgradeScreen;
@@ -43,7 +44,7 @@
 
     void updateUpgradeScreen(UpgradeScreen *up, Vector2 mousePos);
 
-    void drawUpgrades(UpgradeScreen *up);
+    void drawUpgrades(UpgradeScreen *up, Font font);
     
 
 

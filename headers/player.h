@@ -3,6 +3,7 @@
 #include "raylib.h"
 #include "animation.h"
 #include "../headers/arena.h"
+#include "../headers/upgrade.h"
 
 
     typedef enum{
@@ -76,6 +77,8 @@
     void playerCollisions(Player *player, Rectangle rec[], int recNum);
 
     bool checkPlayerHit(Player *player, Rectangle enemyAttackRec, Vector2 enemyAttackingPos);
+
+    bool applyPlayerUpgrade(Player *player, Upgrades selectedUpgrade);
 
     void axeUpdate(Player *player, Rectangle rec[], int recNum);
 

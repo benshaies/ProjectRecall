@@ -205,6 +205,33 @@ bool checkPlayerHit(Player *player, Rectangle enemyAttackRec, Vector2 enemyAttac
     }
 }
 
+bool applyPlayerUpgrade(Player *player, Upgrades selectedUpgrade){
+    
+    switch (selectedUpgrade){
+        
+        case BIGGER_WEAPON:
+            printf("BIGGER WEAPON\n");
+            return true;
+            break;
+        case FASTER_WEAPON:
+            printf("FASTER_WEAPON\n");
+            return true;
+        case DEFLECT_OFF_WALLS:
+            printf("DEFLECT_OFF_WALLS\n");
+            return true;
+        case INCREASED_DAMAGE:
+            printf ("INCREASED_DAMAGE");
+            return true;
+        case INCREASE_PLAYER_SPEED:
+
+        case GAIN_HEALTH:
+
+        case IMMUNE_WHILE_PULLING_IN:
+
+    return false;
+    }
+}
+
 
 void axeUpdate(Player *player, Rectangle rec[], int recNum){
     switch (player->axe.state){
