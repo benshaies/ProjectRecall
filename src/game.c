@@ -346,6 +346,7 @@ void gameUpdate(){
                     upgradeScreen.selectedUpgrade = -1;
                 }
             }
+        
             break;
         case TESTING:
             if(IsMouseButtonPressed(MOUSE_BUTTON_LEFT)){
@@ -362,7 +363,13 @@ void gameUpdate(){
 void spawnEnemies(){
     game.enemySpawnTimer += GetFrameTime();
     if(game.enemySpawnTimer >= enemySpawnTime){
-        enemyInit(enemy, player.pos, GetRandomValue(1,2));
+        int random = GetRandomValue(1,3);
+        if(random == 3){
+            enemyInit(enemy, player.pos, 2);
+        }
+        else{
+            enemyInit(enemy, player.pos, 1);
+        }
         game.enemySpawnTimer = 0;
     }
 }
@@ -420,6 +427,10 @@ void gamePlayingDraw(){
             enemyDraw(enemy);
 
             drawParticles(&ps);
+
+            if(debugMode){
+                drawColliderRecs();
+            }
 
         EndMode2D();
 

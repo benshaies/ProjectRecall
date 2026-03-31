@@ -5,7 +5,7 @@
 #include "animation.h"
 #include "particles.h"
 
-    #define ENEMY_NUM 25
+    #define ENEMY_NUM 5
 
     typedef enum{
         HIT,

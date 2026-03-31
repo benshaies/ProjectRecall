@@ -7,17 +7,17 @@
 int player_width = 75;
 int player_height = 75;
 
-const int axeWidth = 50;
-const int axeHeight = 50;
+int axeWidth = 50;
+int axeHeight = 50;
 
 const int axeHoverRadius = 60;
 
-const float axeBaseSpeed = 10;
-const float axeRecallSpeed = 13;
-const float axeSpeedIncrementThrown = 0.5;
-const float axeSpeedIncrementRecall = 0.75;
+float axeBaseSpeed = 10;
+float axeRecallSpeed = 13;
+float axeSpeedIncrementThrown = 0.5;
+float axeSpeedIncrementRecall = 0.75;
 
-const float playerBaseSpeed = 5.0f;
+float playerBaseSpeed = 5.0f;
 
 int playerKnockbackFrames = 10;
 int playerKnockbackFramesBase = 10;
@@ -50,6 +50,9 @@ void playerInit(Player *player){
     player->axe.currentDrawRotation = 0.0f;
     player->justThrown = false;
 
+    player->axe.isCurrentlyDeflected = false;
+    player->axe.deflectedCooldown = 0;
+
     animationInit(&player->axe.anim, 0, axeThrowTexture, 16, 4, 0, 0);
 
     //Animations
@@ -61,7 +64,6 @@ void playerInit(Player *player){
     player->animState = IDLE;
 
     //Player upgrade varaibles
-    setMaxUpgradeLevels(player->maxUpgradeLevels);
     for(int i = 0; i < NUMBER_OF_UPGRADES; i++){
         player->upgradeLevels[i] = 0;
     }
@@ -80,7 +82,6 @@ void playerUpdate(Player *player, Rectangle rec[], int recNum, Rectangle enemyAt
     if(isEnemyAttacking){
         checkPlayerHit(player, enemyAttackRec, enemyAttackingPos);
     }
-    
 }
 
 void playerMovement(Player *player, Rectangle enemyAttackRec, bool isEnemyAttacking){
@@ -212,40 +213,36 @@ bool checkPlayerHit(Player *player, Rectangle enemyAttackRec, Vector2 enemyAttac
 }
 
 bool applyPlayerUpgrade(Player *player, Upgrades selectedUpgrade){
-    
     switch (selectedUpgrade){
-        
         case BIGGER_WEAPON:
-
             player->upgradeLevels[BIGGER_WEAPON]++;
+            axeWidth += 10;
+            axeHeight += 10;
             return true;
-            break;
         case FASTER_WEAPON:
-
             player->upgradeLevels[FASTER_WEAPON]++;
-            return true;
-        case DEFLECT_OFF_WALLS:
-            if(player->upgradeLevels[DEFLECT_OFF_WALLS] == 0){
-                player->upgradeLevels[DEFLECT_OFF_WALLS]++;
-            }
+            axeBaseSpeed += 1.5f;
+            axeRecallSpeed += 1.25f;
             return true;
         case INCREASED_DAMAGE:
             player->upgradeLevels[INCREASED_DAMAGE]++;
+            player->axe.damage += 20;
             return true;
         case INCREASE_PLAYER_SPEED:
             player->upgradeLevels[INCREASE_PLAYER_SPEED]++;
+            playerBaseSpeed += 1.5f;
             return true;
-
         case GAIN_HEALTH:
             player->upgradeLevels[GAIN_HEALTH]++;
+            player->lives = Clamp(player->lives + 1, 0, player->baseLives);
             return true;
-
         case IMMUNE_WHILE_PULLING_IN:
-
-    return false;
+            player->upgradeLevels[IMMUNE_WHILE_PULLING_IN]++;
+            return true;
+        default:
+            return false;
     }
 }
-
 
 void axeUpdate(Player *player, Rectangle rec[], int recNum){
     switch (player->axe.state){
@@ -285,13 +282,16 @@ void axeUpdate(Player *player, Rectangle rec[], int recNum){
             //Check collision with wall
             for(int i = 0; i < recNum; i++){
                 if(CheckCollisionRecs(player->axe.rec, rec[i])){
-                    player->axe.attackPos = (Vector2){0,0};
-                    player->axe.dir = (Vector2){0,0};
-                    player->axe.state = DONE_THROW;
-
-                    player->axe.throwSpeed = axeBaseSpeed;
-                }
+                        player->axe.attackPos = (Vector2){0,0};
+                        player->axe.dir = (Vector2){0,0};
+                        player->axe.state = DONE_THROW;
+                        player->axe.throwSpeed = axeBaseSpeed;
             }
+        }
+
+            
+            
+        
 
             if(IsMouseButtonPressed(MOUSE_BUTTON_RIGHT)){
                 player->axe.attackPos = (Vector2){0,0};

@@ -21,7 +21,6 @@ void enemyInit(Enemy enemy[], Vector2 playerPos, int type){
             enemy[i].type = type;
             enemy[i].pos = enemySpawnPosition;
             enemy[i].rec = (Rectangle){enemy[i].pos.x, enemy[i].pos.y, 50, 50};
-            enemy[i].speed = GetRandomValue(2,4);
             enemy[i].dir = Vector2Normalize((Vector2){playerPos.x - enemy[i].pos.x, playerPos.y - enemy[i].pos.y});
             enemy[i].active = true;
             
@@ -46,11 +45,13 @@ void enemyInit(Enemy enemy[], Vector2 playerPos, int type){
             
             if(type == 1){ // Normal
                 animationInit(&enemy[i].anim, 0, enemyIdleTexture, 16, 4, 0, 0);
+                enemy[i].speed = GetRandomValue(4,5);
 
                 enemy[i].health = 150.0f;
             }
             else if(enemy[i].type == 2){ //Shield enemy
                 animationInit(&enemy[i].anim, 0, enemy2RunTexture, 16, 9, 0, 0);
+                enemy[i].speed = GetRandomValue(2,3);
 
                 enemy[i].health = 50.0f;
             }
@@ -261,7 +262,7 @@ void enemyDraw(Enemy enemy[]){
                 }
             }
 
-            DrawRectangle(enemy[i].rec.x, enemy[i].rec.y - 50, (int)(enemy[i].rec.width * (enemy[i].health/enemy[i].baseHealth)), 20, WHITE );
+            DrawRectangle(enemy[i].rec.x, enemy[i].rec.y - 50, (int)(enemy[i].rec.width * (enemy[i].health/enemy[i].baseHealth)), 10, WHITE);
         }
     }
 }

@@ -42,7 +42,8 @@
 
         float currentDrawRotation;
 
-        
+        bool isCurrentlyDeflected;
+        int deflectedCooldown;
 
     }Weapon;
 
@@ -71,7 +72,6 @@
 
         //Upgrade variables
         int upgradeLevels[NUMBER_OF_UPGRADES];
-        int maxUpgradeLevels[NUMBER_OF_UPGRADES];
     }Player;
 
     void playerInit(Player *player);

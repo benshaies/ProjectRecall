@@ -35,17 +35,6 @@ void upgradeStructInit(UpgradeScreen *up){
     
 }
 
-void setMaxUpgradeLevels(int maxUpgradeLevels[]){
-    maxUpgradeLevels[BIGGER_WEAPON] = -1;
-    maxUpgradeLevels[FASTER_WEAPON] = -1;
-    maxUpgradeLevels[DEFLECT_OFF_WALLS] = 1;
-    maxUpgradeLevels[INCREASED_DAMAGE] = -1;
-
-    maxUpgradeLevels[INCREASE_PLAYER_SPEED] = -1;
-    maxUpgradeLevels[GAIN_HEALTH] = -1;
-}
-
-
 void createUpgrades(UpgradeScreen *up){
     int count = 0;
     while (count < 3){

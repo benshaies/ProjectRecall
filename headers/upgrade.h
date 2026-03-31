@@ -7,7 +7,6 @@
     typedef enum{
         BIGGER_WEAPON,
         FASTER_WEAPON,
-        DEFLECT_OFF_WALLS,
         INCREASED_DAMAGE,
         
         INCREASE_PLAYER_SPEED,
@@ -42,8 +41,6 @@
 
 
     void upgradeStructInit(UpgradeScreen *up);
-
-    void setMaxUpgradeLevels(int maxUpgradeLevels[]);
 
     void createUpgrades(UpgradeScreen *up);
 
