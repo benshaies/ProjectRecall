@@ -42,6 +42,8 @@
 
         float currentDrawRotation;
 
+        
+
     }Weapon;
 
     typedef struct{
@@ -66,6 +68,10 @@
         //Animation related variables
         int animationDir;
         AnimState animState;
+
+        //Upgrade variables
+        int upgradeLevels[NUMBER_OF_UPGRADES];
+        int maxUpgradeLevels[NUMBER_OF_UPGRADES];
     }Player;
 
     void playerInit(Player *player);

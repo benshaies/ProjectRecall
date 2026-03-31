@@ -35,11 +35,21 @@ void upgradeStructInit(UpgradeScreen *up){
     
 }
 
+void setMaxUpgradeLevels(int maxUpgradeLevels[]){
+    maxUpgradeLevels[BIGGER_WEAPON] = -1;
+    maxUpgradeLevels[FASTER_WEAPON] = -1;
+    maxUpgradeLevels[DEFLECT_OFF_WALLS] = 1;
+    maxUpgradeLevels[INCREASED_DAMAGE] = -1;
+
+    maxUpgradeLevels[INCREASE_PLAYER_SPEED] = -1;
+    maxUpgradeLevels[GAIN_HEALTH] = -1;
+}
+
 
 void createUpgrades(UpgradeScreen *up){
     int count = 0;
     while (count < 3){
-        int ran = GetRandomValue(0,6);
+        int ran = GetRandomValue(0, NUMBER_OF_UPGRADES - 1);
         bool duplicate = false;
         for(int i = 0; i < count; i++){
             if(up->upgrade[i] == ran){duplicate = true; break;}
@@ -130,7 +140,7 @@ void drawUpgrades(UpgradeScreen *up, Font font){
     if(up->state != NOT_ACTIVE){
 
         float pulse = (sinf(GetTime() * 2.0f) + 1.0f) / 2.0f;
-        float borderThickness = 2.0f + pulse * 4.0f;// oscillates between 2 and 6 (
+        float borderThickness = 1.0f + pulse * 3.0f;// oscillates between 2 and 6 
 
         for(int i = 0; i < 3; i++){
              // Color){254,231,97,255}

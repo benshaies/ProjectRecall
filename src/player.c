@@ -60,6 +60,12 @@ void playerInit(Player *player){
     player->animationDir = 1;
     player->animState = IDLE;
 
+    //Player upgrade varaibles
+    setMaxUpgradeLevels(player->maxUpgradeLevels);
+    for(int i = 0; i < NUMBER_OF_UPGRADES; i++){
+        player->upgradeLevels[i] = 0;
+    }
+
 }
 
 
@@ -210,21 +216,29 @@ bool applyPlayerUpgrade(Player *player, Upgrades selectedUpgrade){
     switch (selectedUpgrade){
         
         case BIGGER_WEAPON:
-            printf("BIGGER WEAPON\n");
+
+            player->upgradeLevels[BIGGER_WEAPON]++;
             return true;
             break;
         case FASTER_WEAPON:
-            printf("FASTER_WEAPON\n");
+
+            player->upgradeLevels[FASTER_WEAPON]++;
             return true;
         case DEFLECT_OFF_WALLS:
-            printf("DEFLECT_OFF_WALLS\n");
+            if(player->upgradeLevels[DEFLECT_OFF_WALLS] == 0){
+                player->upgradeLevels[DEFLECT_OFF_WALLS]++;
+            }
             return true;
         case INCREASED_DAMAGE:
-            printf ("INCREASED_DAMAGE");
+            player->upgradeLevels[INCREASED_DAMAGE]++;
             return true;
         case INCREASE_PLAYER_SPEED:
+            player->upgradeLevels[INCREASE_PLAYER_SPEED]++;
+            return true;
 
         case GAIN_HEALTH:
+            player->upgradeLevels[GAIN_HEALTH]++;
+            return true;
 
         case IMMUNE_WHILE_PULLING_IN:
 

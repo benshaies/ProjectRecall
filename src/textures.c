@@ -35,6 +35,8 @@ void texturesLoad(){
     upgradeTextures[1] = LoadTexture("../assets/upgradeTwo.png");
     upgradeTextures[2] = LoadTexture("../assets/upgradeThree.png");
     upgradeTextures[3] = LoadTexture("../assets/upgradeFour.png");
+    upgradeTextures[4] = LoadTexture("../assets/upgradeFive.png");
+    upgradeTextures[5] = LoadTexture("../assets/upgradeSix.png");
 
     SetTextureFilter(levelTilesetTexture, TEXTURE_FILTER_POINT);
 

@@ -25,6 +25,7 @@ void playAnimation(Animation *animation, Rectangle destination, int direction, f
 
     Rectangle frameRec = {animation->currentFrame * animation->size, animation->yPos, direction*animation->size, animation->size};
     DrawTexturePro(animation->texture, frameRec, destination, (Vector2){0,0}, 0.0f, WHITE);
+
 }
 
 void drawAnimationFrame(Animation *animation, Rectangle destination, int direction, int frameNum){

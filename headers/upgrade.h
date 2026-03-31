@@ -2,7 +2,7 @@
 #define UPGRADE_H
 #include <raylib.h>
 
-#define NUMBER_OF_UPGRADES 7
+#define NUMBER_OF_UPGRADES 6
 
     typedef enum{
         BIGGER_WEAPON,
@@ -42,6 +42,8 @@
 
 
     void upgradeStructInit(UpgradeScreen *up);
+
+    void setMaxUpgradeLevels(int maxUpgradeLevels[]);
 
     void createUpgrades(UpgradeScreen *up);
 
