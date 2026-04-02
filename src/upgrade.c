@@ -6,6 +6,8 @@
 Rectangle finalBaseRec = {290, 160, 700, 400};
 float openingSpeed = 2.0f;
 
+ParticleSystem upPS;
+
 void upgradeStructInit(UpgradeScreen *up){
 
     up->openingProgress[0] = 0.0f;  //from 0.0 - 1.0
@@ -35,10 +37,22 @@ void upgradeStructInit(UpgradeScreen *up){
     
 }
 
-void createUpgrades(UpgradeScreen *up){
+void createUpgrades(UpgradeScreen *up, bool playerImmunePullingIn, bool isHealthFull){
     int count = 0;
     while (count < 3){
         int ran = GetRandomValue(0, NUMBER_OF_UPGRADES - 1);
+        if(playerImmunePullingIn && ran == IMMUNE_WHILE_PULLING_IN){
+            while(ran == IMMUNE_WHILE_PULLING_IN){
+                ran = GetRandomValue(0, NUMBER_OF_UPGRADES - 1);
+            }
+        }
+
+        if(isHealthFull && ran == GAIN_HEALTH){
+            while(ran == GAIN_HEALTH){
+                ran = GetRandomValue(0, NUMBER_OF_UPGRADES -1);
+            }
+        }
+
         bool duplicate = false;
         for(int i = 0; i < count; i++){
             if(up->upgrade[i] == ran){duplicate = true; break;}
@@ -68,6 +82,27 @@ void updateUpgradeScreen(UpgradeScreen *up, Vector2 mousePos){
             
             if(up->currentOpening < 3){
                 up->openingProgress[up->currentOpening] += openingSpeed * GetFrameTime();
+                int i = up->currentOpening;
+
+                
+                spawnParticles(
+                    &upPS,
+                    (Vector2){up->upgradeRecs[i].x + up->upgradeRecs[i].width/2, up->upgradeRecs[i].y + 25},
+                    GetRandomValue(1,3) * 0.15,
+                    WHITE,
+                    (Vector2){GetRandomValue(-15,15), GetRandomValue(-5, -15)},
+                    GetRandomValue(5,10)
+                );
+
+                spawnParticles(
+                    &upPS,
+                    (Vector2){up->upgradeRecs[i].x + up->upgradeRecs[i].width/2, up->upgradeRecs[i].y + up->upgradeRecs[i].height - 25},
+                    GetRandomValue(1,3) * 0.15,
+                    WHITE,
+                    (Vector2){GetRandomValue(-15,15), GetRandomValue(5, 15)},
+                    GetRandomValue(5,10)
+                );
+
                 if(up->openingProgress[up->currentOpening] >= 1.0f){
                     up->openingProgress[up->currentOpening] = 1.0f;
                     up->currentOpening++;
@@ -122,6 +157,8 @@ void updateUpgradeScreen(UpgradeScreen *up, Vector2 mousePos){
         
 
     }
+
+    updateParticles(&upPS);
 }
 
 void drawUpgrades(UpgradeScreen *up, Font font){
@@ -129,13 +166,17 @@ void drawUpgrades(UpgradeScreen *up, Font font){
     if(up->state != NOT_ACTIVE){
 
         float pulse = (sinf(GetTime() * 2.0f) + 1.0f) / 2.0f;
-        float borderThickness = 1.0f + pulse * 3.0f;// oscillates between 2 and 6 
+        float borderThickness = 1.0f + pulse * 3.0f;// oscillates between  2 and 6 
+
+        drawParticles(&upPS);
 
         for(int i = 0; i < 3; i++){
              // Color){254,231,97,255}
             DrawTexturePro(upgradeTextures[up->upgrade[i]], (Rectangle){0,0,33,58}, up->upgradeRecs[i], (Vector2){0,0}, 0.0f, Fade((up->isHovering[i] ? WHITE : WHITE), up->openingProgress[i]));
-            DrawRectangleLinesEx(up->upgradeRecs[i], borderThickness, Fade(up->isHovering[i]? WHITE: (Color){162, 38, 51}, up->openingProgress[i]));
+            DrawRectangleLinesEx(up->upgradeRecs[i], borderThickness, Fade(up->isHovering[i]? (Color){44, 232, 245}: WHITE, up->openingProgress[i]));
         }
+
+
 
 
     }

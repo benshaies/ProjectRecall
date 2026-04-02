@@ -1,6 +1,6 @@
 #include "../headers/textures.h"
 
-Texture2D playerIdleTexture, playerSideTexture, levelTilesetTexture, playerHurtTexture;
+Texture2D playerIdleTexture, playerSideTexture, levelTilesetTexture, playerHurtTexture, playerImmuneTexture;
 Texture2D enemyIdleTexture, enemyHitTexture, enemy2RunTexture, enemy2HitTexture;
 Texture2D cursorTexture;
 Texture2D axeThrowTexture, axeBaseTexture;
@@ -28,6 +28,7 @@ void texturesLoad(){
     heartEmptyTexture = LoadTexture("../assets/heartEmpty.png");
 
     playerHurtTexture = LoadTexture("../assets/playerHurt.png");
+    playerImmuneTexture = LoadTexture("../assets/playerImmune.png");
 
     upgradeScreenBaseTexture = LoadTexture("../assets/upgradeScreenBase.png");
 
@@ -62,6 +63,7 @@ void texturesUnload(){
     UnloadTexture(heartEmptyTexture);
 
     UnloadTexture(playerHurtTexture);
+    UnloadTexture(playerImmuneTexture);
 
     UnloadTexture(upgradeScreenBaseTexture);
 }

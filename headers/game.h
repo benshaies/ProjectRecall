@@ -26,6 +26,8 @@
         GameState state;
 
         int score;
+        int scoreThresholdNum;
+
         int enemiesKilled;
         float timeSurvived;
     }Game;

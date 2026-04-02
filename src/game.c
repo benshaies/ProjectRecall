@@ -82,6 +82,7 @@ bool isBoomerangDeflected = false;
 //Upgrade screen stuff
 Rectangle baseRec = {290, 160, 700, 400};
 UpgradeScreen upgradeScreen;
+bool startUpgrades = false;
 
 Font font;
 
@@ -125,6 +126,8 @@ void gameInit(){
     camera.zoom = 0.75f;
 
     game.score = 0;
+    game.scoreThresholdNum = 1;
+
     game.enemiesKilled = 0;
     game.timeSurvived = 0.0f;
 
@@ -215,8 +218,8 @@ void manageParticles(){
 
     //Boomerang particles
     if( (player.axe.state == THROWN || player.axe.state == RECALL)){
-        spawnParticles(&ps, player.axe.pos, GetRandomValue(1,3) * 0.15, boomerangTrailColor, (Vector2){GetRandomValue(1,3), GetRandomValue(0,2)}, GetRandomValue(3,6));
-        spawnParticles(&ps, player.axe.pos, GetRandomValue(1,3) * 0.15, boomerangTrailColor2, (Vector2){ GetRandomValue(1,3), GetRandomValue(0,2)}, GetRandomValue(3,6));
+        spawnParticles(&ps, player.axe.pos, GetRandomValue(1,3) * 0.15, boomerangTrailColor, (Vector2){GetRandomValue(1,3), GetRandomValue(0,2)}, GetRandomValue(3 + player.upgradeLevels[BIGGER_WEAPON] * 2,6 + player.upgradeLevels[BIGGER_WEAPON] * 4));
+        spawnParticles(&ps, player.axe.pos, GetRandomValue(1,3) * 0.15, boomerangTrailColor2, (Vector2){ GetRandomValue(1,3), GetRandomValue(0,2)}, GetRandomValue(3 + player.upgradeLevels[BIGGER_WEAPON] * 2,6 + player.upgradeLevels[BIGGER_WEAPON] * 4));
     }
 
     //Enemy particles when hit
@@ -270,7 +273,7 @@ void gamePlayingUpdate(){
         //Enemy killed and spawn particles
         else if(enemyUpdateReturn == 1){
             game.enemiesKilled++;
-            spawnParticlesExpandingRing(&ps, player.axe.pos, 0.25, enemyHitParticleColor, 5, GetRandomValue(10,20), GetRandomValue(30, 50)); //(ps, spawnPos, lifeSpan, color, startSize, expandingRate, ring thickness)
+            spawnParticlesExpandingRing(&ps, player.axe.pos, 0.25, WHITE, 5, GetRandomValue(10,20), GetRandomValue(30, 50)); //(ps, spawnPos, lifeSpan, color, startSize, expandingRate, ring thickness)
         }
         //Shield Enemy is hit during throw
         else if(enemyUpdateReturn == 2 && !isBoomerangDeflected){
@@ -329,10 +332,17 @@ void gameUpdate(){
             break;
         case PLAYING:
             gamePlayingUpdate();
-            if(IsKeyPressed(KEY_U)){
+            if(startUpgrades || IsKeyPressed(KEY_U)){
                 game.state = UPGRADE_SCREEN;
-                createUpgrades(&upgradeScreen);
+                createUpgrades(&upgradeScreen, player.upgradeLevels[IMMUNE_WHILE_PULLING_IN] == 1, player.lives == 6);
                 resetUpgradeUI(&upgradeScreen);
+            }
+            if(game.score >= (game.scoreThresholdNum * 150)){
+                startUpgrades = true;
+                game.scoreThresholdNum++;
+            }
+            else{
+                startUpgrades = false;
             }
             break;
         case DEAD:
@@ -345,17 +355,9 @@ void gameUpdate(){
                     game.state = PLAYING;
                     upgradeScreen.selectedUpgrade = -1;
                 }
-            }
-        
+            }        
             break;
         case TESTING:
-            if(IsMouseButtonPressed(MOUSE_BUTTON_LEFT)){
-                createUpgrades(&upgradeScreen);
-                for(int i = 0; i < 3; i++){
-                    printf("%d\n", upgradeScreen.upgrade[i]);
-                }
-            }
-            updateParticles(&ps);
             break;
     }
 }
@@ -363,8 +365,8 @@ void gameUpdate(){
 void spawnEnemies(){
     game.enemySpawnTimer += GetFrameTime();
     if(game.enemySpawnTimer >= enemySpawnTime){
-        int random = GetRandomValue(1,3);
-        if(random == 3){
+        int random = GetRandomValue(1,4);
+        if(random == 4){
             enemyInit(enemy, player.pos, 2);
         }
         else{
@@ -372,6 +374,8 @@ void spawnEnemies(){
         }
         game.enemySpawnTimer = 0;
     }
+
+    
 }
 
 void gameResolutionDraw(){

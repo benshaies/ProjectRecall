@@ -45,7 +45,7 @@ void enemyInit(Enemy enemy[], Vector2 playerPos, int type){
             
             if(type == 1){ // Normal
                 animationInit(&enemy[i].anim, 0, enemyIdleTexture, 16, 4, 0, 0);
-                enemy[i].speed = GetRandomValue(4,5);
+                enemy[i].speed = GetRandomValue(3,4);
 
                 enemy[i].health = 150.0f;
             }

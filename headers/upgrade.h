@@ -1,6 +1,7 @@
 #ifndef UPGRADE_H
 #define UPGRADE_H
 #include <raylib.h>
+#include "../headers/particles.h"
 
 #define NUMBER_OF_UPGRADES 6
 
@@ -42,7 +43,7 @@
 
     void upgradeStructInit(UpgradeScreen *up);
 
-    void createUpgrades(UpgradeScreen *up);
+    void createUpgrades(UpgradeScreen *up, bool playerImmunePullingIn, bool isHealthFull);
 
     void resetUpgradeUI(UpgradeScreen *up);
 

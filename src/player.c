@@ -202,14 +202,19 @@ void playerCollisions(Player *player, Rectangle rec[], int recNum){
 }
 
 bool checkPlayerHit(Player *player, Rectangle enemyAttackRec, Vector2 enemyAttackingPos){
-    if(CheckCollisionRecs(enemyAttackRec, player->rec)){
+    if(player->upgradeLevels[IMMUNE_WHILE_PULLING_IN] == 0 || player->state != PULLING_IN){
+
+        if(CheckCollisionRecs(enemyAttackRec, player->rec)){
         player->state = HURT;
         player->knockbackDir = Vector2Normalize((Vector2){player->pos.x - enemyAttackingPos.x, player->pos.y - enemyAttackingPos.y});
         return true;
+        }
+        else{
+            return false;
+        }
+
     }
-    else{
-        return false;
-    }
+    
 }
 
 bool applyPlayerUpgrade(Player *player, Upgrades selectedUpgrade){
@@ -358,6 +363,9 @@ void playerDraw(Player *player){
 
     if(player->state == HURT){
         DrawTexturePro(playerHurtTexture, (Rectangle){0,0,16,16}, player->rec, (Vector2){0,0}, 0.0f, WHITE);
+    }
+    else if(player->state == PULLING_IN && player->upgradeLevels[IMMUNE_WHILE_PULLING_IN] == 1){
+        DrawTexturePro(playerImmuneTexture, (Rectangle){0,0,16,16}, player->rec, (Vector2){0,0}, 0.0f, WHITE);
     }
     else{
         switch (player->animState){
