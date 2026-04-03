@@ -14,7 +14,6 @@ void enemyInit(Enemy enemy[], Vector2 playerPos, int type){
             //Deciding enemy Position
             Vector2 enemySpawnPosition = {GetRandomValue(150, 2500), GetRandomValue(150, 1300)};
             
-            
             while(CheckCollisionCircleRec(playerPos, distanceFromPlayerRadius, (Rectangle){enemySpawnPosition.x, enemySpawnPosition.y, 50, 50})){
                 enemySpawnPosition = (Vector2){GetRandomValue(150, 2500), GetRandomValue(150, 1300)};
             }
