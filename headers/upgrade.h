@@ -21,6 +21,7 @@
         DONE_OPENING,
         SELECTED,
         CLOSING,
+        
     }UpgradeScreenState;
 
     typedef struct{

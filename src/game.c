@@ -84,15 +84,23 @@ Rectangle baseRec = {290, 160, 700, 400};
 UpgradeScreen upgradeScreen;
 bool startUpgrades = false;
 
+//Gameover screen variables
+Rectangle gameOverRec = {390, -400, 500, 400};
+float gameOverRecVelY = 0.0f;
+bool hasFallen = false;
+float gameOverRecGravity = 1.5f;
+int bounceCount = 0;
+
 Font font;
+
 
 void gameInit(){
     InitWindow(GAME_WIDTH, GAME_HEIGHT, "Project Recall");  
     SetTargetFPS(60);
 
-    font = LoadFont("../assets/font.otf");
+    font = LoadFontEx("../PixeloidSans-Bold.ttf", 64, 0, 0);
 
-    game.state = PLAYING;
+    game.state = DEAD;
     memset(&ps, 0, sizeof(ParticleSystem));
 
     texturesLoad();
@@ -214,6 +222,25 @@ void manageParticles(){
         playerHitParticleStarted = false;
     }
 
+    if(player.state == PULLING_IN){
+        spawnParticles(
+            &ps,
+            player.pos,
+            GetRandomValue(1,5) * 0.01,
+            WHITE,
+            (Vector2){GetRandomValue(-2,2), GetRandomValue(-2, 2)},
+            GetRandomValue(1,10)
+        );
+        spawnParticles(
+            &ps,
+            player.pos,
+            GetRandomValue(1,5) * 0.025,
+            WHITE,
+            (Vector2){GetRandomValue(-2,2), GetRandomValue(-2, 2)},
+            GetRandomValue(1,10)
+        );
+    }
+
 
 
     //Boomerang particles
@@ -260,13 +287,13 @@ void gamePlayingUpdate(){
         //Returns 2 - Shield enemy hit during throw
         
         if(enemyUpdateReturn == -1){ // Enemy hit
-            screenShake = screenShakeFrameBase;
-            hitStopTimer = hitStopTime;
+            screenShake = 15;
+            hitStopTimer = hitStopTime * 2;
         }
         //Enemy killed and spawn particles
         else if(enemyUpdateReturn == 1){
             game.enemiesKilled++;
-            spawnParticlesExpandingRing(&ps, player.axe.pos, 0.25, WHITE, 5, GetRandomValue(10,20), GetRandomValue(30, 50)); //(ps, spawnPos, lifeSpan, color, startSize, expandingRate, ring thickness)
+            spawnParticlesExpandingRing(&ps, player.axe.pos, 0.25, enemy->healthBarColor, 5, GetRandomValue(10,20), GetRandomValue(30, 50)); //(ps, spawnPos, lifeSpan, color, startSize, expandingRate, ring thickness)
         }
         //Shield Enemy is hit during throw
         else if(enemyUpdateReturn == 2 && !isBoomerangDeflected){
@@ -285,8 +312,8 @@ void gamePlayingUpdate(){
         //If player hurt and screenshake hasnt started, start it once
         if(player.state == HURT && !playerScreenShakeStarted){
             playerScreenShakeStarted = true;
-            screenShake = screenShakeFrameBase;
-            hitStopTimer = hitStopTime;
+            screenShake = screenShakeFrameBase + 10;
+            hitStopTimer = hitStopTime ;
         }
 
         //Reset screenshake check variable if player isnt hurt anymore
@@ -318,6 +345,29 @@ void gameUpgradeScreenDraw(){
     drawUpgrades(&upgradeScreen, font);
 }
 
+void gameUpdateDeadScreen(){
+
+    if(!hasFallen){
+        gameOverRecVelY += gameOverRecGravity;
+    }
+
+    if(gameOverRec.y >= 160){
+        gameOverRecVelY *= 0.75f;
+        gameOverRecVelY *= -1;
+        bounceCount++;
+    }
+
+    if(bounceCount >= 5){
+        gameOverRec.y = 160;
+        hasFallen = true;
+        gameOverRecVelY = 0.0f;
+        bounceCount = 0;
+    }
+
+    //Update rec
+    gameOverRec.y += gameOverRecVelY;
+}
+
 void gameUpdate(){
 
     switch (game.state){
@@ -326,7 +376,7 @@ void gameUpdate(){
         case PLAYING:
             gamePlayingUpdate();
             if(startUpgrades || IsKeyPressed(KEY_U)){
-                game.state = UPGRADE_SCREEN;
+                game.state = UPGRADE_SCREEN;;
                 createUpgrades(&upgradeScreen, player.upgradeLevels[IMMUNE_WHILE_PULLING_IN] == 1, player.lives == 6);
                 resetUpgradeUI(&upgradeScreen);
             }
@@ -337,8 +387,15 @@ void gameUpdate(){
             else{
                 startUpgrades = false;
             }
+
+            //Player died
+            if(player.lives <= 0){
+                game.state = DEAD;
+            }
+
             break;
         case DEAD:
+            gameUpdateDeadScreen();
             break;
         case UPGRADE_SCREEN:
             updateUpgradeScreen(&upgradeScreen, mousePos);
@@ -423,7 +480,8 @@ void gamePlayingDraw(){
             drawLevel(game.propsArray, 1);
 
             playerDraw(&player);
-            enemyDraw(enemy);
+
+            enemyDraw(enemy, game.state == UPGRADE_SCREEN);
 
             drawParticles(&ps);
 
@@ -470,6 +528,14 @@ void gamePlayingDraw(){
         }
 }
 
+void gameDeadScreenDraw(){
+    DrawTexturePro(gameOverTexture, (Rectangle){0,0,80, 64}, gameOverRec, (Vector2){0,0}, 0.0f, WHITE);
+    DrawTextEx(font, "GAME OVER", (Vector2){gameOverRec.x+ 60, gameOverRec.y + 20}, 64, 5, (Color){162, 38, 51, 255});
+    DrawTextEx(font, "Time Survived:", (Vector2){gameOverRec.x + 30, gameOverRec.y + 100}, 30, 2, (Color){24, 20, 37, 255});
+    DrawTextEx(font, "Enemies Killed:", (Vector2){gameOverRec.x + 30, gameOverRec.y + 150}, 30, 2, (Color){24, 20, 37, 255});
+    
+}
+
 //DRAWING
 void gameDraw(){
     BeginTextureMode(target);
@@ -483,6 +549,8 @@ void gameDraw(){
                 gamePlayingDraw();
                 break;
             case DEAD:
+                gamePlayingDraw();
+                gameDeadScreenDraw();
                 break;  
             case UPGRADE_SCREEN:
                 gamePlayingDraw();

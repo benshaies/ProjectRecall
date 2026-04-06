@@ -58,16 +58,18 @@ void enemyInit(Enemy enemy[], Vector2 playerPos, int type, int scoreMilestone){
             else if(enemyHealthMultiplier >= 3){
                 enemy[i].healthBarColor = (Color){181, 80, 136, 255};
             }
+
+            int ranEnemy = GetRandomValue(0,2);
             
             if(type == 1){ // Normal
-                animationInit(&enemy[i].anim, 0, enemyIdleTexture, 16, 4, 0, 0);
+                animationInit(&enemy[i].anim, 0, enemyOneRunTexture[ranEnemy], 16, 4, 0, 0);
                 enemy[i].speed = GetRandomValue(3,4);
 
                 enemy[i].health = 150.0f + (50 * enemyHealthMultiplier);
                 enemy[i].baseHealth = enemy[i].health;
             }
             else if(enemy[i].type == 2){ //Shield enemy
-                animationInit(&enemy[i].anim, 0, enemy2RunTexture, 16, 9, 0, 0);
+                animationInit(&enemy[i].anim, 0, enemy2RunTexture[ranEnemy], 16, 9, 0, 0);
                 enemy[i].speed = GetRandomValue(2,3);
 
                 enemy[i].health = 50.0f + (50 * enemyHealthMultiplier);
@@ -140,7 +142,7 @@ int enemyUpdate(Enemy enemy[], Rectangle playerRec, Weapon axe, Vector2 playerPo
                 
                 float damageMultiplier = 1.0f;
                 if(axe.state == 3){
-                    damageMultiplier = 1.75f;
+                    damageMultiplier = 1.5f;
                 }
 
                 if(enemy[i].type == 1 || (enemy[i].type == 2 && axe.state == RECALL)){
@@ -246,14 +248,14 @@ void enemyCollisions(Enemy enemy[], Rectangle rec[], int recNum, int i){
     
 }
 
-void enemyDraw(Enemy enemy[]){
+void enemyDraw(Enemy enemy[], bool upgradeState){
     for(int i = 0; i < ENEMY_NUM; i++){
         if(enemy[i].active){
             //DrawRectangleRec(enemy[i].rec, enemy[i].color);
             Rectangle animRec = {enemy[i].rec.x - 25, enemy[i].rec.y - 25, enemy[i].rec.width + 50, enemy[i].rec.height + 50};
             
             if(enemy[i].isAttacking){
-                DrawRectangleRec(enemy[i].attackRec, (Color){255,255,255, enemy[i].attackFrameTimer * 4});
+                DrawRectangleRec(enemy[i].attackRec, (Color){enemy[i].healthBarColor.r,enemy[i].healthBarColor.g,enemy[i].healthBarColor.b, enemy[i].attackFrameTimer * 4});
 
             }
             int animDir;
@@ -264,7 +266,10 @@ void enemyDraw(Enemy enemy[]){
                 else if(enemy[i].dir.x < 0){
                     animDir = -1;
                 }
-                playAnimation(&enemy[i].anim, animRec, animDir, 0.15);
+
+                if(!upgradeState)playAnimation(&enemy[i].anim, animRec, animDir, 0.15);
+                else drawAnimationFrame(&enemy[i].anim, animRec, animDir, 1);
+                
             }
             else{
 

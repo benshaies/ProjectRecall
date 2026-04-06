@@ -37,28 +37,19 @@ void upgradeStructInit(UpgradeScreen *up){
     
 }
 
-void createUpgrades(UpgradeScreen *up, bool playerImmunePullingIn, bool isHealthFull){
+void createUpgrades(UpgradeScreen *up, bool playerImmunePullingIn, bool isHealthFull) {
     int count = 0;
-    while (count < 3){
+    while (count < 3) {
         int ran = GetRandomValue(0, NUMBER_OF_UPGRADES - 1);
-        if(playerImmunePullingIn && ran == IMMUNE_WHILE_PULLING_IN){
-            while(ran == IMMUNE_WHILE_PULLING_IN){
-                ran = GetRandomValue(0, NUMBER_OF_UPGRADES - 1);
-            }
-        }
 
-        if(isHealthFull && ran == GAIN_HEALTH){
-            while(ran == GAIN_HEALTH){
-                ran = GetRandomValue(0, NUMBER_OF_UPGRADES -1);
-            }
-        }
+        if (playerImmunePullingIn && ran == IMMUNE_WHILE_PULLING_IN) continue;
+        if (isHealthFull && ran == GAIN_HEALTH) continue;
 
         bool duplicate = false;
-        for(int i = 0; i < count; i++){
-            if(up->upgrade[i] == ran){duplicate = true; break;}
+        for (int i = 0; i < count; i++) {
+            if (up->upgrade[i] == ran) { duplicate = true; break; }
         }
-
-        if(!duplicate) up->upgrade[count++] = ran;
+        if (!duplicate) up->upgrade[count++] = ran;
     }
 }
 

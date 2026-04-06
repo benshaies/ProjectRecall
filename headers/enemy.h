@@ -57,7 +57,7 @@
 
     void enemyCollisions(Enemy enemy[], Rectangle rec[], int recNum, int i);
 
-    void enemyDraw(Enemy enemy[]);
+    void enemyDraw(Enemy enemy[], bool upgradeState);
 
     void enemyDelete(Enemy enemy[], int i, ParticleSystem *ps);
 

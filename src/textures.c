@@ -1,21 +1,29 @@
 #include "../headers/textures.h"
 
 Texture2D playerIdleTexture, playerSideTexture, levelTilesetTexture, playerHurtTexture, playerImmuneTexture;
-Texture2D enemyIdleTexture, enemyHitTexture, enemy2RunTexture, enemy2HitTexture;
+Texture2D enemyOneRunTexture[3], enemyHitTexture, enemy2RunTexture[3], enemy2HitTexture;
 Texture2D cursorTexture;
 Texture2D axeThrowTexture, axeBaseTexture;
 Texture2D heartTexture, heartHalfTexture, heartEmptyTexture;
 Texture2D upgradeScreenBaseTexture;
 Texture2D upgradeTextures[NUMBER_OF_UPGRADES];
+Texture2D gameOverTexture;
 
 void texturesLoad(){
     playerIdleTexture = LoadTexture("../assets/playerIdle.png");
     playerSideTexture = LoadTexture("../assets/playerSide.png");
     levelTilesetTexture = LoadTexture("../assets/levelTileset.png");
 
-    enemyIdleTexture = LoadTexture("../assets/enemyRunt.png");
+    enemyOneRunTexture[0] = LoadTexture("../assets/enemyRunt.png");
+    enemyOneRunTexture[1] = LoadTexture("../assets/enemyRunType2.png");
+    enemyOneRunTexture[2] = LoadTexture("../assets/enemyOneRunVariety3.png");
+    
     enemyHitTexture = LoadTexture("../assets/enemyHit.png");
-    enemy2RunTexture = LoadTexture("../assets/enemy2Run.png");
+    
+    enemy2RunTexture[0] = LoadTexture("../assets/enemy2Run.png");
+    enemy2RunTexture[1] = LoadTexture("../assets/enemy2RunType2.png");
+    enemy2RunTexture[2] = LoadTexture("../assets/enemy2RunType3.png");
+    
     enemy2HitTexture = LoadTexture("../assets/enemy2Hit.png");
 
     cursorTexture = LoadTexture("../assets/cursor.png");
@@ -39,6 +47,8 @@ void texturesLoad(){
     upgradeTextures[4] = LoadTexture("../assets/upgradeFive.png");
     upgradeTextures[5] = LoadTexture("../assets/upgradeSix.png");
 
+    gameOverTexture = LoadTexture("../assets/gameOver.png");
+
     SetTextureFilter(levelTilesetTexture, TEXTURE_FILTER_POINT);
 
 }
@@ -48,9 +58,16 @@ void texturesUnload(){
     UnloadTexture(playerSideTexture);
     UnloadTexture(levelTilesetTexture);
 
-    UnloadTexture(enemyIdleTexture);
+    UnloadTexture(enemyOneRunTexture[0]);
+    UnloadTexture(enemyOneRunTexture[1]);
+    UnloadTexture(enemyOneRunTexture[2]);
+
     UnloadTexture(enemyHitTexture);
-    UnloadTexture(enemy2RunTexture);
+
+    UnloadTexture(enemy2RunTexture[0]);
+    UnloadTexture(enemy2RunTexture[1]);
+    UnloadTexture(enemy2RunTexture[2]);
+    
     UnloadTexture(enemy2HitTexture);
 
     UnloadTexture(cursorTexture);
@@ -66,4 +83,6 @@ void texturesUnload(){
     UnloadTexture(playerImmuneTexture);
 
     UnloadTexture(upgradeScreenBaseTexture);
+
+    UnloadTexture(gameOverTexture);
 }

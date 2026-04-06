@@ -243,6 +243,9 @@ bool applyPlayerUpgrade(Player *player, Upgrades selectedUpgrade){
             return true;
         case IMMUNE_WHILE_PULLING_IN:
             player->upgradeLevels[IMMUNE_WHILE_PULLING_IN]++;
+            if(player->upgradeLevels[IMMUNE_WHILE_PULLING_IN] >= 1){
+                player->upgradeLevels[IMMUNE_WHILE_PULLING_IN] = 1;
+            }
             return true;
         default:
             return false;
