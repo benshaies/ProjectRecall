@@ -8,7 +8,7 @@ extern Texture2D heartTexture, heartHalfTexture, playerHurtTexture, heartEmptyTe
 extern Texture2D upgradeScreenBaseTexture, playerImmuneTexture;
 extern Texture2D upgradeTextures[NUMBER_OF_UPGRADES];
 extern Texture2D enemy1RunVariery2Texture, gameOverTexture;
-
+ 
 void texturesLoad();
 
 void texturesUnload();
