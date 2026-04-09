@@ -1,62 +1,57 @@
 #ifndef GAME_H
 #define GAME_H
-#include "raylib.h"
 #include "arena.h"
+#include "raylib.h"
 
-    extern Vector2 mousePos;
-    extern Vector2 worldMouse;
+extern Vector2 mousePos;
+extern Vector2 worldMouse;
 
-    typedef enum{
-        MAIN_MENU,
-        PLAYING,
-        DEAD,
-        UPGRADE_SCREEN,
-        TESTING,
-    }GameState;
+typedef enum {
+  MAIN_MENU,
+  PLAYING,
+  DEAD,
+  UPGRADE_SCREEN,
+  TESTING,
+} GameState;
 
-    typedef struct{
-        float timer;
-        float delay;
-        bool triggered;
-        bool particleTriggered;
-    }TimedEvent;
+typedef struct {
+  float timer;
+  float delay;
+  bool triggered;
+  bool particleTriggered;
+} TimedEvent;
 
+typedef struct {
+  float enemySpawnTimer;
+  int levelArray[LEVEL_HEIGHT][LEVEL_WIDTH];
+  int propsArray[LEVEL_HEIGHT][LEVEL_WIDTH];
+  int floorArray[FlOOR_HEIGHT][FLOOR_WIDTH];
+  Rectangle *colliderRecs;
+  int colliderCount;
 
-    typedef struct{
-        float enemySpawnTimer;
-        int levelArray[LEVEL_HEIGHT][LEVEL_WIDTH];
-        int propsArray[LEVEL_HEIGHT][LEVEL_WIDTH];
-        int floorArray[FlOOR_HEIGHT][FLOOR_WIDTH];
-        Rectangle *colliderRecs;
-        int colliderCount;
+  GameState state;
 
-        GameState state;
+  int score;
+  int scoreThresholdNum;
 
-        int score;
-        int scoreThresholdNum;
+  int enemiesKilled;
+  float timeSurvived;
+} Game;
 
-        int enemiesKilled;
-        float timeSurvived;
-    }Game;
+void gameInit();
 
-    
+void gameSetFullscreen();
 
-    void gameInit();
+void gameUpdate();
+void resetTimedEvent(TimedEvent *event, float delay);
 
-    void gameSetFullscreen();
+bool updateTimedEvent(TimedEvent *event);
 
-    void gameUpdate();
+void gameResolutionDraw();
 
-    void resetTimedEvent(TimedEvent *event, float delay);
+void gameDraw();
 
-    bool updateTimedEvent(TimedEvent *event);
+void spawnEnemies();
 
-    void gameResolutionDraw();
-
-    void gameDraw();
-
-    void spawnEnemies();
-
-    void drawColliderRecs();
-
+void resetGame();
 #endif

@@ -1,0 +1,3 @@
+-I/home/benja/raylib/src
+-I/usr/include
+-std=c99

@@ -1,95 +1,98 @@
 #ifndef PLAYER_H
 #define PLAYER_H
-#include "raylib.h"
-#include "animation.h"
 #include "../headers/arena.h"
 #include "../headers/upgrade.h"
+#include "animation.h"
+#include "raylib.h"
 
+typedef enum {
+  NOTHING,
+  PULLING_IN,
+  HURT,
+  IMMUNITY,
+} State;
 
-    typedef enum{
-        NOTHING,
-        PULLING_IN,
-        HURT,
-        IMMUNITY, 
-    }State;
+typedef enum {
+  IDLE,
+  RUNNING,
+} AnimState;
 
-    typedef enum{
-        IDLE,
-        RUNNING,
-    }AnimState;
+typedef enum {
+  HOLDING,
+  THROWN,
+  DONE_THROW,
+  RECALL,
+} State2;
 
-    typedef enum{
-        HOLDING,
-        THROWN,
-        DONE_THROW,
-        RECALL,
-    }State2;
+typedef struct {
+  Vector2 pos;
+  Rectangle rec;
+  float throwSpeed;
+  float recallSpeed;
+  State2 state;
 
-    typedef struct{
-        Vector2 pos;
-        Rectangle rec;
-        float throwSpeed;
-        float recallSpeed;
-        State2 state;
+  Vector2 attackPos;
+  float attackCheckRadius;
+  Vector2 dir;
 
-        Vector2 attackPos;
-        float attackCheckRadius;
-        Vector2 dir;
+  float damage;
 
-        float damage;
+  Animation anim;
 
-        Animation anim;
+  float currentDrawRotation;
 
-        float currentDrawRotation;
+  bool isCurrentlyDeflected;
+  int deflectedCooldown;
 
-        bool isCurrentlyDeflected;
-        int deflectedCooldown;
+} Weapon;
 
-    }Weapon;
+typedef struct {
+  // Player specific
+  Vector2 pos;
+  Rectangle rec;
+  float speed;
+  Vector2 dir;
+  State state;
+  int baseLives;
+  int lives;
+  Vector2 knockbackDir;
 
-    typedef struct{
-        //Player specific
-        Vector2 pos;
-        Rectangle rec;
-        float speed;
-        Vector2 dir;
-        State state;
-        int baseLives;
-        int lives;
-        Vector2 knockbackDir;
+  // Axe varaibles
+  Weapon axe;
 
-        //Axe varaibles
-        Weapon axe;
+  // Animations
+  Animation playerIdleAnim;
+  Animation playerSideAnim;
+  bool justThrown;
 
-        //Animations
-        Animation playerIdleAnim;
-        Animation playerSideAnim;
-        bool justThrown;
+  // Animation related variables
+  int animationDir;
+  AnimState animState;
 
-        //Animation related variables
-        int animationDir;
-        AnimState animState;
+  // Upgrade variables
+  int upgradeLevels[NUMBER_OF_UPGRADES];
+} Player;
 
-        //Upgrade variables
-        int upgradeLevels[NUMBER_OF_UPGRADES];
-    }Player;
+void playerInit(Player *player, bool resetting);
 
-    void playerInit(Player *player);
+void playerUpdate(Player *player, Rectangle rec[], int recNum,
+                  Rectangle enemyAttackRec, bool isEnemyAttacking,
+                  Vector2 enemyAttackingPos);
 
-    void playerUpdate(Player *player, Rectangle rec[], int recNum, Rectangle enemyAttackRec, bool isEnemyAttacking, Vector2 enemyAttackingPos);
+void playerMovement(Player *player, Rectangle enemyAttackRec,
+                    bool isEnemyAttacking);
 
-    void playerMovement(Player *player, Rectangle enemyAttackRec, bool isEnemyAttacking);
+void playerCollisions(Player *player, Rectangle rec[], int recNum);
 
-    void playerCollisions(Player *player, Rectangle rec[], int recNum);
+bool checkPlayerHit(Player *player, Rectangle enemyAttackRec,
+                    Vector2 enemyAttackingPos);
 
-    bool checkPlayerHit(Player *player, Rectangle enemyAttackRec, Vector2 enemyAttackingPos);
+bool applyPlayerUpgrade(Player *player, Upgrades selectedUpgrade);
 
-    bool applyPlayerUpgrade(Player *player, Upgrades selectedUpgrade);
+void axeUpdate(Player *player, Rectangle rec[], int recNum);
 
-    void axeUpdate(Player *player, Rectangle rec[], int recNum);
+void deflectAxe(Player *player);
 
-    void deflectAxe(Player *player);
-
-    void playerDraw(Player *player);
+void playerDraw(Player *player);
 
 #endif
