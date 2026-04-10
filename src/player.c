@@ -50,8 +50,7 @@ void playerInit(Player *player, bool resetting) {
   player->baseLives = 6;
   player->knockbackDir = (Vector2){0, 0};
 
-  // Weapon stuff
-  player->axe.pos = (Vector2){player->pos.x, player->pos.y};
+  // Weapon stuff player->axe.pos = (Vector2){player->pos.x, player->pos.y};
   player->axe.rec =
       (Rectangle){player->axe.pos.x - axeWidth / 2,
                   player->axe.pos.y - axeHeight / 2, axeWidth, axeHeight};
@@ -363,7 +362,7 @@ void deflectAxe(Player *player) {
   player->axe.dir.y *= -1;
 }
 
-void playerDraw(Player *player) {
+void playerDraw(Player *player, bool playDeadAnim, bool gameStateIsDead) {
 
   Rectangle drawRec = {player->axe.rec.x, player->axe.rec.y,
                        player->axe.rec.width, player->axe.rec.height};
@@ -388,16 +387,27 @@ void playerDraw(Player *player) {
     DrawTexturePro(playerImmuneTexture, (Rectangle){0, 0, 16, 16}, player->rec,
                    (Vector2){0, 0}, 0.0f, WHITE);
   } else {
-    switch (player->animState) {
-    case IDLE:
-      playAnimation(&player->playerIdleAnim, player->rec, player->animationDir,
-                    0.25);
-      break;
 
-    case RUNNING:
-      playAnimation(&player->playerSideAnim, player->rec, player->animationDir,
-                    0.15);
-      break;
+    if (!playDeadAnim) {
+
+      if (!gameStateIsDead) {
+        switch (player->animState) {
+        case IDLE:
+          playAnimation(&player->playerIdleAnim, player->rec,
+                        player->animationDir, 0.25);
+          break;
+
+        case RUNNING:
+          playAnimation(&player->playerSideAnim, player->rec,
+                        player->animationDir, 0.15);
+          break;
+        }
+      } else
+        drawAnimationFrame(&player->playerDeadAnim, player->rec,
+                           player->animationDir, 17);
+    } else {
+      playAnimation(&player->playerDeadAnim, player->rec, player->animationDir,
+                    0.35);
     }
   }
 }

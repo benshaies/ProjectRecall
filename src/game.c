@@ -105,6 +105,9 @@ Rectangle playAgainButtonRec;
 
 bool gameOverAnimationsDone = false;
 
+// Playing to gamepver transition variable
+float playDeadAnimationTimer = 0;
+
 void gameInit() {
   InitWindow(GAME_WIDTH, GAME_HEIGHT, "Project Recall");
   SetTargetFPS(60);
@@ -467,9 +470,20 @@ void gameUpdate() {
 
     // Player died
     if (player.lives <= 0) {
-      game.state = DEAD;
+      game.state = DYING_TRANSITION;
     }
 
+    // DEBUG
+    if (IsKeyPressed(KEY_P)) {
+      player.lives--;
+    }
+
+    break;
+  case DYING_TRANSITION:
+    playDeadAnimationTimer += GetFrameTime();
+    if (playDeadAnimationTimer >= 6.0f) {
+      game.state = DEAD;
+    }
     break;
   case DEAD:
     gameUpdateDeadScreen();
@@ -567,7 +581,7 @@ void gamePlayingDraw() {
   // Props
   drawLevel(game.propsArray, 1);
 
-  playerDraw(&player);
+  playerDraw(&player, game.state == DYING_TRANSITION, game.state == DEAD);
 
   enemyDraw(enemy, game.state == UPGRADE_SCREEN);
 
@@ -716,6 +730,9 @@ void gameDraw() {
   case PLAYING:
     gamePlayingDraw();
     break;
+  case DYING_TRANSITION:
+    gamePlayingDraw();
+    break;
   case DEAD:
     gamePlayingDraw();
     gameDeadScreenDraw();
@@ -759,6 +776,7 @@ void resetGame() {
   hasFallen = false;
   gameOverRecGravity = 1.5f;
   bounceCount = 0;
+  gameOverAnimationsDone = false;
 
   resetTimedEvent(&displayTimeSurvied, 1.5);
   resetTimedEvent(&displayEnemiesKilled, 1.5);

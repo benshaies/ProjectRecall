@@ -9,6 +9,7 @@ extern Vector2 worldMouse;
 typedef enum {
   MAIN_MENU,
   PLAYING,
+  DYING_TRANSITION,
   DEAD,
   UPGRADE_SCREEN,
   TESTING,

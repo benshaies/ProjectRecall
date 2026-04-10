@@ -102,6 +102,6 @@ void axeUpdate(Player *player, Rectangle rec[], int recNum);
 
 void deflectAxe(Player *player);
 
-void playerDraw(Player *player);
+void playerDraw(Player *player, bool playDeadAnim, bool gameStateIsDead);
 
 #endif
