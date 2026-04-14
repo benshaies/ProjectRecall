@@ -1,19 +1,19 @@
-#include "raylib.h"
+#include "../headers/audio.h"
 #include "../headers/game.h"
 #include "../headers/textures.h"
+#include "raylib.h"
 
+int main(void) {
 
-int main(void){
+  gameInit();
+  ToggleBorderlessWindowed();
 
-    gameInit();
-    ToggleBorderlessWindowed();
-
-    while (!WindowShouldClose()){
-        gameUpdate();
-        gameDraw();
-    }
-    texturesUnload();
-
-    CloseWindow();
-    return 0;
+  while (!WindowShouldClose()) {
+    gameUpdate();
+    gameDraw();
+  }
+  texturesUnload();
+  audioFileUnload();
+  CloseWindow();
+  return 0;
 }

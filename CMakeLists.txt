@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.5)
 project(game C)
 
-set(CMAKE_C_STANDARD 99)
+set(CMAKE_C_STANDARD 11)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 
 if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
@@ -48,6 +48,7 @@ set(SOURCES
     ../src/arena.c
     ../src/particles.c
     ../src/upgrade.c
+    ../src/audio.c
 )
 
 # Create executable

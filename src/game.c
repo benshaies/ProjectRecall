@@ -1,5 +1,6 @@
 #include "../headers/game.h"
 #include "../headers/arena.h"
+#include "../headers/audio.h"
 #include "../headers/enemy.h"
 #include "../headers/particles.h"
 #include "../headers/player.h"
@@ -115,9 +116,43 @@ bool gameOverAnimationsDone = false;
 // Playing to gamepver transition variable
 float playDeadAnimationTimer = 0;
 
+// Sound stuff
+int currentGameplaySong;
+bool gameplayMusicStarted = false;
+
+int currentMenuSong = 0;
+bool menuMusicStarted = false;
+
+void updateGameplayMusic() {
+  if (!gameplayMusicStarted) {
+    currentGameplaySong = GetRandomValue(0, 2);
+    PlayMusicStream(gameplayMusic[currentGameplaySong]);
+    gameplayMusicStarted = true;
+  }
+
+  UpdateMusicStream(gameplayMusic[currentGameplaySong]);
+
+  // Check if current song is done
+  if (!IsMusicStreamPlaying(gameplayMusic[currentGameplaySong])) {
+    int next = GetRandomValue(0, 2);
+
+    while (next == currentGameplaySong)
+      next = GetRandomValue(0, 2);
+
+    currentGameplaySong = next;
+    PlayMusicStream(gameplayMusic[currentGameplaySong]);
+  }
+}
+
+void updateMenuMusic() {}
 void gameInit() {
   InitWindow(GAME_WIDTH, GAME_HEIGHT, "Project Recall");
   SetTargetFPS(60);
+
+  SetExitKey(KEY_NULL);
+
+  InitAudioDevice();
+  audioFileLoad();
 
   font = LoadFontEx("../PixeloidSans-Bold.ttf", 64, 0, 0);
 
@@ -484,6 +519,8 @@ void gameUpdate() {
   case MAIN_MENU:
     break;
   case PLAYING:
+    if (IsKeyPressed(KEY_ESCAPE)) {
+    }
     gamePlayingUpdate();
     if (startUpgrades || IsKeyPressed(KEY_U)) {
       game.state = UPGRADE_SCREEN;
@@ -510,10 +547,13 @@ void gameUpdate() {
       player.lives--;
     }
 
+    // GAMEPLAY MUSIC PLAYING
+    updateGameplayMusic();
+
     break;
   case DYING_TRANSITION:
     playDeadAnimationTimer += GetFrameTime();
-    if (playDeadAnimationTimer >= 6.0f) {
+    if (playDeadAnimationTimer >= 4.5f) {
       game.state = DEAD;
     }
     break;
@@ -532,7 +572,7 @@ void gameUpdate() {
       }
     }
     break;
-  case TESTING:
+  case PAUSED:
     break;
   }
 }
@@ -615,7 +655,8 @@ void gamePlayingDraw() {
 
   playerDraw(&player, game.state == DYING_TRANSITION, game.state == DEAD);
 
-  enemyDraw(enemy, game.state == UPGRADE_SCREEN);
+  enemyDraw(enemy,
+            game.state == UPGRADE_SCREEN || game.state == DYING_TRANSITION);
 
   if (game.state == PLAYING) {
     drawParticles(&ps);
@@ -796,7 +837,7 @@ void resetGame() {
   game.score = 0;
   game.enemiesKilled = 0;
   game.timeSurvived = 0.0f;
-
+  game.scoreThresholdNum = 1;
   // Reset game over stuff
   gameOverRec = (Rectangle){390, -400, 500, 400};
   gameOverRecVelY = 0.0f;
@@ -804,6 +845,7 @@ void resetGame() {
   gameOverRecGravity = 1.5f;
   bounceCount = 0;
   gameOverAnimationsDone = false;
+  playDeadAnimationTimer = 0.0f;
 
   resetTimedEvent(&displayTimeSurvied, 1.5);
   resetTimedEvent(&displayEnemiesKilled, 1.5);

@@ -13,6 +13,7 @@ typedef enum {
   DEAD,
   UPGRADE_SCREEN,
   TESTING,
+  PAUSED,
 } GameState;
 
 typedef struct {

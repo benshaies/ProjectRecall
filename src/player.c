@@ -1,6 +1,8 @@
 #include "../headers/player.h"
+#include "../headers/audio.h"
 #include "../headers/game.h"
 #include "../headers/textures.h"
+#include "raylib.h"
 #include "raymath.h"
 #include "stdio.h"
 
@@ -27,6 +29,9 @@ int playerImmunityFramesBase = 20;
 
 // The collision rec for player
 Rectangle tempRec;
+
+// Player walking audio counter
+int walkingSoundCount = 0;
 
 void playerInit(Player *player, bool resetting) {
   if (resetting) {
@@ -165,6 +170,12 @@ void playerMovement(Player *player, Rectangle enemyAttackRec,
   // Update anim state
   if (player->dir.x != 0 || player->dir.y != 0) {
     player->animState = RUNNING;
+
+    walkingSoundCount++;
+    if (walkingSoundCount >= 16) {
+      PlaySound(walkingSound);
+      walkingSoundCount = 0;
+    }
 
   } else {
     player->animState = IDLE;
@@ -407,7 +418,7 @@ void playerDraw(Player *player, bool playDeadAnim, bool gameStateIsDead) {
                            player->animationDir, 17);
     } else {
       playAnimation(&player->playerDeadAnim, player->rec, player->animationDir,
-                    0.35);
+                    0.25);
     }
   }
 }
