@@ -113,6 +113,12 @@ Rectangle playAgainButtonRecBase = {690, 460, 150, 60};
 
 bool gameOverAnimationsDone = false;
 
+// Paused screen variables
+
+bool pausedScreenOpen = false;
+float pauseScreenOpeningProgress = 0.0f;
+Rectangle pausedScreenRec = {390, 160, 500, 400};
+
 // Playing to gamepver transition variable
 float playDeadAnimationTimer = 0;
 
@@ -444,6 +450,23 @@ bool isHovering(Rectangle rec) {
   }
 }
 
+// PAUSED SCREEN
+void gameUpdatePausedScreen() {
+  if (!pausedScreenOpen) {
+    pauseScreenOpeningProgress += GetFrameTime() * 2;
+    if (pauseScreenOpeningProgress >= 1.0f) {
+      pauseScreenOpeningProgress = 1.0f;
+      pausedScreenOpen = true;
+    }
+  }
+}
+
+void gameDrawPausedScreen() {
+  DrawTexturePro(gameOverTexture, (Rectangle){0, 0, 80, 64}, pausedScreenRec,
+                 (Vector2){0, 0}, 0.0f,
+                 Fade(WHITE, pauseScreenOpeningProgress));
+}
+
 void gameUpdateDeadScreen() {
 
   if (!hasFallen) {
@@ -519,8 +542,11 @@ void gameUpdate() {
   case MAIN_MENU:
     break;
   case PLAYING:
+
     if (IsKeyPressed(KEY_ESCAPE)) {
+      game.state = PAUSED;
     }
+
     gamePlayingUpdate();
     if (startUpgrades || IsKeyPressed(KEY_U)) {
       game.state = UPGRADE_SCREEN;
@@ -573,6 +599,12 @@ void gameUpdate() {
     }
     break;
   case PAUSED:
+    gameUpdatePausedScreen();
+    if (IsKeyPressed(KEY_ESCAPE)) {
+      pausedScreenOpen = false;
+      pauseScreenOpeningProgress = 0.0f;
+      game.state = PLAYING;
+    }
     break;
   }
 }
@@ -813,6 +845,9 @@ void gameDraw() {
   case TESTING:
     drawParticles(&ps);
     break;
+  case PAUSED:
+    gamePlayingDraw();
+    gameDrawPausedScreen();
   }
 
   // Draw cursor
