@@ -79,6 +79,12 @@ void updateUpgradeScreen(UpgradeScreen *up, Vector2 mousePos) {
   case OPENING:
 
     if (up->currentOpening < 3) {
+
+      if (up->openingProgress[up->currentOpening] > 0.25f &&
+          up->openingProgress[up->currentOpening] < 0.30) {
+        PlaySound(upgradeDisplaySound);
+      }
+
       up->openingProgress[up->currentOpening] += openingSpeed * GetFrameTime();
       int i = up->currentOpening;
 
@@ -101,7 +107,6 @@ void updateUpgradeScreen(UpgradeScreen *up, Vector2 mousePos) {
       if (up->openingProgress[up->currentOpening] >= 1.0f) {
         up->openingProgress[up->currentOpening] = 1.0f;
         up->currentOpening++;
-        PlaySound(upgradeDisplaySound);
       }
     }
 

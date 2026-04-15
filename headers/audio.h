@@ -2,7 +2,8 @@
 #define AUDIO_H
 #include "raylib.h"
 
-extern Sound walkingSound, upgradeDisplaySound;
+extern Sound walkingSound, upgradeDisplaySound, upgradeUnlockedSound,
+    throwSound, recallSound, enemyHitSound;
 
 extern Music gameplayMusic[3], menuMusic[3];
 

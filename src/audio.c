@@ -1,7 +1,8 @@
 #include "../headers/audio.h"
 #include "raylib.h"
 
-Sound walkingSound, upgradeDisplaySound;
+Sound walkingSound, upgradeDisplaySound, upgradeUnlockedSound, throwSound,
+    recallSound, enemyHitSound;
 
 Music gameplayMusic[3], menuMusic[3];
 
@@ -9,6 +10,10 @@ void audioFileLoad() {
   // SOUND
   walkingSound = LoadSound("../audio/sound/walking.ogg");
   upgradeDisplaySound = LoadSound("../audio/sound/displayCards.wav");
+  upgradeUnlockedSound = LoadSound("../audio/sound/upgradeUnlocked.wav");
+  throwSound = LoadSound("../audio/sound/throw.wav");
+  recallSound = LoadSound("../audio/sound/recall.wav");
+  enemyHitSound = LoadSound("../audio/sound/enemyHit.wav");
 
   // MUSIC
   gameplayMusic[0] = LoadMusicStream(
@@ -26,19 +31,19 @@ void audioFileLoad() {
   menuMusic[1] = LoadMusicStream("../audio/music/menuMusic/Returning Home.ogg");
   menuMusic[2] =
       LoadMusicStream("../audio/music/menuMusic/Smooth As Glass.ogg");
-
-  // Setting volume
-  SetSoundVolume(walkingSound, 0.6);
-
-  SetMusicVolume(gameplayMusic[0], 0.1);
-  SetMusicVolume(gameplayMusic[1], 0.1);
-  SetMusicVolume(gameplayMusic[2], 0.1);
+  menuMusic[0].looping = false;
+  menuMusic[1].looping = false;
+  menuMusic[2].looping = false;
 }
 
 void audioFileUnload() {
 
   UnloadSound(walkingSound);
   UnloadSound(upgradeDisplaySound);
+  UnloadSound(upgradeUnlockedSound);
+  UnloadSound(throwSound);
+  UnloadSound(recallSound);
+  UnloadSound(enemyHitSound);
 
   UnloadMusicStream(gameplayMusic[0]);
   UnloadMusicStream(gameplayMusic[1]);

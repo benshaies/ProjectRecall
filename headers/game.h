@@ -38,6 +38,8 @@ typedef struct {
 
   int enemiesKilled;
   float timeSurvived;
+
+  float masterVolume;
 } Game;
 
 void gameInit();

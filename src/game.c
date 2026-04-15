@@ -10,7 +10,9 @@
 #include "raylib.h"
 #include "raymath.h"
 #include "stdio.h"
+#define RAYGUI_IMPLEMENTATION
 #include "stdlib.h"
+#include <raygui.h>
 #include <string.h>
 
 const int GAME_WIDTH = 1280;
@@ -129,28 +131,6 @@ bool gameplayMusicStarted = false;
 int currentMenuSong = 0;
 bool menuMusicStarted = false;
 
-void updateGameplayMusic() {
-  if (!gameplayMusicStarted) {
-    currentGameplaySong = GetRandomValue(0, 2);
-    PlayMusicStream(gameplayMusic[currentGameplaySong]);
-    gameplayMusicStarted = true;
-  }
-
-  UpdateMusicStream(gameplayMusic[currentGameplaySong]);
-
-  // Check if current song is done
-  if (!IsMusicStreamPlaying(gameplayMusic[currentGameplaySong])) {
-    int next = GetRandomValue(0, 2);
-
-    while (next == currentGameplaySong)
-      next = GetRandomValue(0, 2);
-
-    currentGameplaySong = next;
-    PlayMusicStream(gameplayMusic[currentGameplaySong]);
-  }
-}
-
-void updateMenuMusic() {}
 void gameInit() {
   InitWindow(GAME_WIDTH, GAME_HEIGHT, "Project Recall");
   SetTargetFPS(60);
@@ -208,46 +188,59 @@ void gameInit() {
   resetTimedEvent(&displayTimeSurvied, 1.5f);
   resetTimedEvent(&displayEnemiesKilled, 1.5f);
   resetTimedEvent(&displayScore, 2.0f);
+
+  game.masterVolume = 0.5f;
 }
 
-void cameraShake() {
-  if (screenShake > 0) {
-    screenShake--;
-    camera.offset = (Vector2){
-        camera.offset.x + GetRandomValue(-screenShakeValue, screenShakeValue),
-        camera.offset.y + GetRandomValue(-screenShakeValue, screenShakeValue)};
+void resetGame() {
+  playerInit(&player, true);
+
+  for (int i = 0; i < ENEMY_NUM; i++) {
+    enemyDelete(enemy, i);
+  }
+
+  // Reset game function
+  game.score = 0;
+  game.enemiesKilled = 0;
+  game.timeSurvived = 0.0f;
+  game.scoreThresholdNum = 1;
+  // Reset game over stuff
+  gameOverRec = (Rectangle){390, -400, 500, 400};
+  gameOverRecVelY = 0.0f;
+  hasFallen = false;
+  gameOverRecGravity = 1.5f;
+  bounceCount = 0;
+  gameOverAnimationsDone = false;
+  playDeadAnimationTimer = 0.0f;
+
+  resetTimedEvent(&displayTimeSurvied, 1.5);
+  resetTimedEvent(&displayEnemiesKilled, 1.5);
+  resetTimedEvent(&displayScore, 2.0);
+}
+
+bool isHovering(Rectangle rec) {
+  if (CheckCollisionPointRec(mousePos, rec)) {
+    return true;
   } else {
-    // camera.offset = (Vector2){GAME_WIDTH/2, GAME_HEIGHT/2};
-    camera.offset.x = Lerp(camera.offset.x, GAME_WIDTH / 2, 5 * GetFrameTime());
-    camera.offset.y =
-        Lerp(camera.offset.y, GAME_HEIGHT / 2, 5 * GetFrameTime());
+    return false;
   }
 }
 
-void updateCamera() {
+void spawnEnemies() {
+  game.enemySpawnTimer += GetFrameTime();
+  if (game.enemySpawnTimer >= enemySpawnTime) {
 
-  Vector2 mouseDir = {worldMouse.x - player.pos.x, worldMouse.y - player.pos.y};
-  mouseDir = Vector2Normalize(mouseDir);
-  mouseDir = Vector2Scale(mouseDir, 80);
-
-  Vector2 desiredTarget = {player.pos.x + mouseDir.x,
-                           player.pos.y + mouseDir.y};
-
-  camera.target.x =
-      (Lerp(camera.target.x, desiredTarget.x, 10 * GetFrameTime()));
-  camera.target.y =
-      (Lerp(camera.target.y, desiredTarget.y, 10 * GetFrameTime()));
-
-  cameraShake();
-}
-
-void gameSetFullscreen() {
-  if (IsKeyPressed(KEY_F11)) {
-    ToggleBorderlessWindowed();
+    // 25 percent chang of spawning shield enemy
+    int random = GetRandomValue(1, 4);
+    if (random == 4) {
+      enemyInit(enemy, player.pos, 2, game.scoreThresholdNum);
+    } else {
+      enemyInit(enemy, player.pos, 1, game.scoreThresholdNum);
+    }
+    game.enemySpawnTimer = 0;
   }
 }
 
-// Checks if enemy is attacking, stores attack rec and returns true
 int checkEnemyAttack() {
   int returnValue = -1;
   for (int i = 0; i < ENEMY_NUM; i++) {
@@ -352,9 +345,179 @@ void manageParticles() {
   updateParticles(&ps);
 }
 
+// MUSIC FUNCTIONS
+void updateGameplayMusic() {
+  if (!gameplayMusicStarted) {
+    currentGameplaySong = GetRandomValue(0, 2);
+    PlayMusicStream(gameplayMusic[currentGameplaySong]);
+    gameplayMusicStarted = true;
+  }
+
+  UpdateMusicStream(gameplayMusic[currentGameplaySong]);
+
+  // Check if current song is done
+  if (!IsMusicStreamPlaying(gameplayMusic[currentGameplaySong])) {
+    int next = GetRandomValue(0, 2);
+
+    while (next == currentGameplaySong)
+      next = GetRandomValue(0, 2);
+
+    currentGameplaySong = next;
+    PlayMusicStream(gameplayMusic[currentGameplaySong]);
+  }
+}
+
+void updateMenuMusic() {
+  if (!menuMusicStarted) {
+    currentMenuSong = GetRandomValue(0, 2);
+    PlayMusicStream(menuMusic[currentMenuSong]);
+    menuMusicStarted = true;
+  }
+
+  UpdateMusicStream(menuMusic[currentMenuSong]);
+
+  if (!IsMusicStreamPlaying(menuMusic[currentMenuSong])) {
+    int next = GetRandomValue(0, 2);
+
+    while (next == currentMenuSong)
+      next = GetRandomValue(0, 2);
+
+    currentMenuSong = next;
+    PlayMusicStream(menuMusic[currentMenuSong]);
+  }
+}
+
+void updateMusicVolume() {
+  float mv = game.masterVolume;
+
+  SetSoundVolume(walkingSound, 0.25 * mv);
+  SetSoundVolume(upgradeDisplaySound, 0.3 * mv);
+  SetSoundVolume(upgradeUnlockedSound, 0.3 * mv);
+  SetSoundVolume(recallSound, 0.1 * mv);
+  SetSoundVolume(throwSound, 0.3 * mv);
+  SetSoundVolume(enemyHitSound, 0.75 * mv);
+
+  SetMusicVolume(gameplayMusic[0], 0.05 * mv);
+  SetMusicVolume(gameplayMusic[1], 0.05 * mv);
+  SetMusicVolume(gameplayMusic[2], 0.05 * mv);
+}
+
+// UPGRADE SCREEN DRAW
+void gameUpgradeScreenDraw() { drawUpgrades(&upgradeScreen, font); }
+
+// PAUSED STATE FUNCTIONS
+void gameUpdatePausedScreen() {
+  if (!pausedScreenOpen) {
+    pauseScreenOpeningProgress += GetFrameTime() * 10;
+    if (pauseScreenOpeningProgress >= 1.0f) {
+      pauseScreenOpeningProgress = 1.0f;
+      pausedScreenOpen = true;
+    }
+  }
+}
+
+void DrawVolumeSlider(Vector2 mousePos, float *masterVolume) {
+  Rectangle track = {pausedScreenRec.x + 50, pausedScreenRec.y + 150,
+                     pausedScreenRec.width - 100, 25};
+
+  // Handle
+  float handleX = track.x + (*masterVolume * track.width);
+  Rectangle handle = {handleX - 8, track.y - 4, 16, track.height + 8};
+
+  // Input
+  if (IsMouseButtonDown(MOUSE_BUTTON_LEFT) &&
+      CheckCollisionPointRec(mousePos, track)) {
+    *masterVolume = (mousePos.x - track.x) / track.width;
+    *masterVolume = Clamp(*masterVolume, 0.0f, 1.0f);
+  }
+
+  // Draw
+  DrawRectangleRec(track, GRAY);
+  DrawRectangle(track.x, track.y, handleX - track.x, track.height,
+                quitButtonColor);
+  DrawRectangleRec(handle, WHITE);
+
+  // Labels
+  DrawTextEx(font, TextFormat("%d%%", (int)(*masterVolume * 100)),
+             (Vector2){track.x + track.width + 8, track.y + 4}, 14, 3, WHITE);
+}
+
+void gameDrawPausedScreen() {
+  DrawTexturePro(gameOverTexture, (Rectangle){0, 0, 80, 64}, pausedScreenRec,
+                 (Vector2){0, 0}, 0.0f,
+                 Fade(WHITE, pauseScreenOpeningProgress));
+
+  if (pausedScreenOpen) {
+    DrawTextEx(font, "GAME PAUSED",
+               (Vector2){pausedScreenRec.x + 45, pausedScreenRec.y + 25}, 55, 5,
+               WHITE);
+
+    DrawTextEx(font, "Volume",
+               (Vector2){pausedScreenRec.x + 160, pausedScreenRec.y + 95}, 45,
+               3, quitButtonColor);
+
+    DrawVolumeSlider(mousePos, &game.masterVolume);
+  }
+}
+
+// TIMED EVENT FUNCTIONS
+void resetTimedEvent(TimedEvent *event, float delay) {
+  event->triggered = false;
+  event->delay = delay;
+  event->timer = 0.0f;
+  event->particleTriggered = false;
+}
+
+bool updateTimedEvent(TimedEvent *event) {
+  if (!event->triggered) {
+    event->timer += GetFrameTime();
+
+    if (event->timer >= event->delay) {
+      event->triggered = true;
+    }
+  }
+
+  return event->triggered;
+}
+
+// CAMERA FUNCTIONS
+void cameraShake() {
+  if (screenShake > 0) {
+    screenShake--;
+    camera.offset = (Vector2){
+        camera.offset.x + GetRandomValue(-screenShakeValue, screenShakeValue),
+        camera.offset.y + GetRandomValue(-screenShakeValue, screenShakeValue)};
+  } else {
+    // camera.offset = (Vector2){GAME_WIDTH/2, GAME_HEIGHT/2};
+    camera.offset.x = Lerp(camera.offset.x, GAME_WIDTH / 2, 5 * GetFrameTime());
+    camera.offset.y =
+        Lerp(camera.offset.y, GAME_HEIGHT / 2, 5 * GetFrameTime());
+  }
+}
+
+void updateCamera() {
+
+  Vector2 mouseDir = {worldMouse.x - player.pos.x, worldMouse.y - player.pos.y};
+  mouseDir = Vector2Normalize(mouseDir);
+  mouseDir = Vector2Scale(mouseDir, 80);
+
+  Vector2 desiredTarget = {player.pos.x + mouseDir.x,
+                           player.pos.y + mouseDir.y};
+
+  camera.target.x =
+      (Lerp(camera.target.x, desiredTarget.x, 10 * GetFrameTime()));
+  camera.target.y =
+      (Lerp(camera.target.y, desiredTarget.y, 10 * GetFrameTime()));
+
+  cameraShake();
+}
+
+// PLAYING STATE FUNCTIONS
 void gamePlayingUpdate() {
   gameSetFullscreen();
   updateScore();
+
+  updateMusicVolume();
 
   if (hitStopTimer <= 0) {
 
@@ -383,15 +546,21 @@ void gamePlayingUpdate() {
     if (enemyUpdateReturn == -1) { // Enemy hit
       screenShake = screenShakeFrameBase;
       hitStopTimer = hitStopTime * 2;
+
+      SetSoundPitch(enemyHitSound,
+                    1.5f + (float)GetRandomValue(0, 10) / 100.0f);
+      PlaySound(enemyHitSound);
     }
     // Enemy killed and spawn particles
     else if (enemyUpdateReturn == 1) {
+
       game.enemiesKilled++;
       spawnParticlesExpandingRing(
           &ps, player.axe.pos, 0.25, enemy->healthBarColor, 5,
           GetRandomValue(10, 20),
-          GetRandomValue(30, 50)); //(ps, spawnPos, lifeSpan, color, startSize,
-                                   // expandingRate, ring thickness)
+          GetRandomValue(30,
+                         50)); //(ps, spawnPos, lifeSpan, color, startSize,
+                               // expandingRate, ring thickness)
     }
     // Shield Enemy is hit during throw
     else if (enemyUpdateReturn == 2 && !isBoomerangDeflected) {
@@ -423,10 +592,11 @@ void gamePlayingUpdate() {
     }
     int checkEnemyAttackReturn = checkEnemyAttack();
 
-    // Player update takes in enemy attack rectangle and also bool to see if any
-    // enemies are attacking the checkEnemyAttack function returns an index with
-    // the enemy attacking if one is, returns -1 otherwise We use this index to
-    // pass in the proper attack rectangle and create a booleon to pass in too
+    // Player update takes in enemy attack rectangle and also bool to see if
+    // any enemies are attacking the checkEnemyAttack function returns an
+    // index with the enemy attacking if one is, returns -1 otherwise We use
+    // this index to pass in the proper attack rectangle and create a
+    // booleon to pass in too
     playerUpdate(&player, game.colliderRecs, game.colliderCount,
                  enemy[checkEnemyAttackReturn].attackRec,
                  (checkEnemyAttackReturn != -1),
@@ -440,33 +610,69 @@ void gamePlayingUpdate() {
   }
 }
 
-void gameUpgradeScreenDraw() { drawUpgrades(&upgradeScreen, font); }
+void gamePlayingDraw() {
 
-bool isHovering(Rectangle rec) {
-  if (CheckCollisionPointRec(mousePos, rec)) {
-    return true;
-  } else {
-    return false;
+  BeginMode2D(camera);
+
+  // FLoor
+  drawFloor(game.floorArray);
+  // Walls
+  drawLevel(game.levelArray, 0);
+  // Props
+  drawLevel(game.propsArray, 1);
+
+  playerDraw(&player, game.state == DYING_TRANSITION, game.state == DEAD);
+
+  enemyDraw(enemy,
+            game.state == UPGRADE_SCREEN || game.state == DYING_TRANSITION);
+
+  if (game.state == PLAYING) {
+    drawParticles(&ps);
   }
-}
 
-// PAUSED SCREEN
-void gameUpdatePausedScreen() {
-  if (!pausedScreenOpen) {
-    pauseScreenOpeningProgress += GetFrameTime() * 2;
-    if (pauseScreenOpeningProgress >= 1.0f) {
-      pauseScreenOpeningProgress = 1.0f;
-      pausedScreenOpen = true;
+  EndMode2D();
+
+  // Draw player health
+  for (int i = 0; i < 3; i++) {
+    int threshold = (i + 1) * 2;
+    Texture2D tex;
+
+    if (player.lives >= threshold) {
+      tex = heartTexture;
+    } else if (player.lives == threshold - 1) {
+      tex = heartHalfTexture;
+    } else {
+      tex = heartEmptyTexture;
+    }
+
+    DrawTexturePro(tex, (Rectangle){0, 0, 16, 16}, healthRecs[i],
+                   (Vector2){0, 0}, 0.0, WHITE);
+  }
+
+  // Score display
+  if (game.state != DEAD) {
+    DrawText((TextFormat("%d", game.score)), 1150, 5, 50, WHITE);
+  }
+
+  if (debugMode) {
+    switch (upgradeScreen.state) {
+    case NOT_ACTIVE:
+      DrawText("NOT_ACTIVE", 0, 0, 50, GREEN);
+      break;
+    case OPENING:
+      DrawText("OPENING", 0, 0, 50, GREEN);
+      break;
+    case DONE_OPENING:
+      DrawText("DONE_OPENING", 0, 0, 50, GREEN);
+      break;
+    case SELECTED:
+      DrawText("SELECTED", 0, 0, 50, GREEN);
+      break;
     }
   }
 }
 
-void gameDrawPausedScreen() {
-  DrawTexturePro(gameOverTexture, (Rectangle){0, 0, 80, 64}, pausedScreenRec,
-                 (Vector2){0, 0}, 0.0f,
-                 Fade(WHITE, pauseScreenOpeningProgress));
-}
-
+// DEAD STATE FUNCTIONS
 void gameUpdateDeadScreen() {
 
   if (!hasFallen) {
@@ -532,206 +738,6 @@ void gameUpdateDeadScreen() {
     } else {
       quitButtonColor = buttonColor;
       quitButtonRec = quitButtonRecBase;
-    }
-  }
-}
-
-void gameUpdate() {
-
-  switch (game.state) {
-  case MAIN_MENU:
-    break;
-  case PLAYING:
-
-    if (IsKeyPressed(KEY_ESCAPE)) {
-      game.state = PAUSED;
-    }
-
-    gamePlayingUpdate();
-    if (startUpgrades || IsKeyPressed(KEY_U)) {
-      game.state = UPGRADE_SCREEN;
-
-      createUpgrades(&upgradeScreen,
-                     player.upgradeLevels[IMMUNE_WHILE_PULLING_IN] == 1,
-                     player.lives == 6);
-      resetUpgradeUI(&upgradeScreen);
-    }
-    if (game.score >= (game.scoreThresholdNum * 125)) {
-      startUpgrades = true;
-      game.scoreThresholdNum++;
-    } else {
-      startUpgrades = false;
-    }
-
-    // Player died
-    if (player.lives <= 0) {
-      game.state = DYING_TRANSITION;
-    }
-
-    // DEBUG
-    if (IsKeyPressed(KEY_P)) {
-      player.lives--;
-    }
-
-    // GAMEPLAY MUSIC PLAYING
-    updateGameplayMusic();
-
-    break;
-  case DYING_TRANSITION:
-    playDeadAnimationTimer += GetFrameTime();
-    if (playDeadAnimationTimer >= 4.5f) {
-      game.state = DEAD;
-    }
-    break;
-  case DEAD:
-    gameUpdateDeadScreen();
-    updateParticles(&ps);
-    cameraShake();
-    break;
-  case UPGRADE_SCREEN:
-    updateUpgradeScreen(&upgradeScreen, mousePos);
-
-    if (upgradeScreen.selectedUpgrade != -1) {
-      if (applyPlayerUpgrade(&player, upgradeScreen.selectedUpgrade)) {
-        game.state = PLAYING;
-        upgradeScreen.selectedUpgrade = -1;
-      }
-    }
-    break;
-  case PAUSED:
-    gameUpdatePausedScreen();
-    if (IsKeyPressed(KEY_ESCAPE)) {
-      pausedScreenOpen = false;
-      pauseScreenOpeningProgress = 0.0f;
-      game.state = PLAYING;
-    }
-    break;
-  }
-}
-
-void resetTimedEvent(TimedEvent *event, float delay) {
-  event->triggered = false;
-  event->delay = delay;
-  event->timer = 0.0f;
-  event->particleTriggered = false;
-}
-
-bool updateTimedEvent(TimedEvent *event) {
-  if (!event->triggered) {
-    event->timer += GetFrameTime();
-
-    if (event->timer >= event->delay) {
-      event->triggered = true;
-    }
-  }
-
-  return event->triggered;
-}
-
-void spawnEnemies() {
-  game.enemySpawnTimer += GetFrameTime();
-  if (game.enemySpawnTimer >= enemySpawnTime) {
-
-    // 25 percent chang of spawning shield enemy
-    int random = GetRandomValue(1, 4);
-    if (random == 4) {
-      enemyInit(enemy, player.pos, 2, game.scoreThresholdNum);
-    } else {
-      enemyInit(enemy, player.pos, 1, game.scoreThresholdNum);
-    }
-    game.enemySpawnTimer = 0;
-  }
-}
-
-void gameResolutionDraw() {
-  BeginDrawing();
-  ClearBackground(WHITE);
-
-  float scale = fmin((float)GetScreenWidth() / GAME_WIDTH,
-                     (float)GetScreenHeight() / GAME_HEIGHT);
-
-  float scaledWidth = GAME_WIDTH * scale;
-  float scaledHeight = GAME_HEIGHT * scale;
-
-  float offsetX = (GetScreenWidth() - scaledWidth) * 0.5f;
-  float offsetY = (GetScreenHeight() - scaledHeight) * 0.5f;
-
-  Rectangle src = {
-      0, 0, (float)target.texture.width,
-      -(float)target.texture.height // flip vertically
-  };
-
-  Rectangle dst = {offsetX, offsetY, scaledWidth, scaledHeight};
-
-  DrawTexturePro(target.texture, src, dst, (Vector2){0, 0}, 0.0f, WHITE);
-
-  mousePos = GetMousePosition();
-
-  mousePos.x = (mousePos.x - offsetX) / scale;
-  mousePos.y = (mousePos.y - offsetY) / scale;
-  worldMouse = GetScreenToWorld2D(mousePos, camera);
-
-  EndDrawing();
-}
-
-void gamePlayingDraw() {
-
-  BeginMode2D(camera);
-
-  // FLoor
-  drawFloor(game.floorArray);
-  // Walls
-  drawLevel(game.levelArray, 0);
-  // Props
-  drawLevel(game.propsArray, 1);
-
-  playerDraw(&player, game.state == DYING_TRANSITION, game.state == DEAD);
-
-  enemyDraw(enemy,
-            game.state == UPGRADE_SCREEN || game.state == DYING_TRANSITION);
-
-  if (game.state == PLAYING) {
-    drawParticles(&ps);
-  }
-
-  EndMode2D();
-
-  // Draw player health
-  for (int i = 0; i < 3; i++) {
-    int threshold = (i + 1) * 2;
-    Texture2D tex;
-
-    if (player.lives >= threshold) {
-      tex = heartTexture;
-    } else if (player.lives == threshold - 1) {
-      tex = heartHalfTexture;
-    } else {
-      tex = heartEmptyTexture;
-    }
-
-    DrawTexturePro(tex, (Rectangle){0, 0, 16, 16}, healthRecs[i],
-                   (Vector2){0, 0}, 0.0, WHITE);
-  }
-
-  // Score display
-  if (game.state != DEAD) {
-    DrawText((TextFormat("%d", game.score)), 1150, 5, 50, WHITE);
-  }
-
-  if (debugMode) {
-    switch (upgradeScreen.state) {
-    case NOT_ACTIVE:
-      DrawText("NOT_ACTIVE", 0, 0, 50, GREEN);
-      break;
-    case OPENING:
-      DrawText("OPENING", 0, 0, 50, GREEN);
-      break;
-    case DONE_OPENING:
-      DrawText("DONE_OPENING", 0, 0, 50, GREEN);
-      break;
-    case SELECTED:
-      DrawText("SELECTED", 0, 0, 50, GREEN);
-      break;
     }
   }
 }
@@ -818,7 +824,122 @@ void gameDeadScreenDraw() {
   }
 }
 
-// DRAWING
+// GAME FUNCTIONS
+void gameUpdate() {
+
+  switch (game.state) {
+  case MAIN_MENU:
+    break;
+  case PLAYING:
+
+    if (IsKeyPressed(KEY_ESCAPE)) {
+      game.state = PAUSED;
+    }
+
+    // DEBUG
+    if (IsKeyPressed(KEY_U)) {
+      startUpgrades = true;
+    }
+    gamePlayingUpdate();
+    if (startUpgrades) {
+
+      game.state = UPGRADE_SCREEN;
+      createUpgrades(&upgradeScreen,
+                     player.upgradeLevels[IMMUNE_WHILE_PULLING_IN] == 1,
+                     player.lives == 6);
+      resetUpgradeUI(&upgradeScreen);
+    }
+    if (game.score >= (game.scoreThresholdNum * 125)) {
+      PlaySound(upgradeUnlockedSound);
+      startUpgrades = true;
+      game.scoreThresholdNum++;
+    } else {
+      startUpgrades = false;
+    }
+
+    // Player died
+    if (player.lives <= 0) {
+      game.state = DYING_TRANSITION;
+    }
+
+    // DEBUG
+    if (IsKeyPressed(KEY_P)) {
+      player.lives--;
+    }
+
+    // GAMEPLAY MUSIC PLAYING
+    updateGameplayMusic();
+
+    break;
+  case DYING_TRANSITION:
+    playDeadAnimationTimer += GetFrameTime();
+    if (playDeadAnimationTimer >= 4.5f) {
+      game.state = DEAD;
+    }
+    break;
+  case DEAD:
+    gameUpdateDeadScreen();
+    updateParticles(&ps);
+    cameraShake();
+    break;
+  case UPGRADE_SCREEN:
+    updateUpgradeScreen(&upgradeScreen, mousePos);
+
+    if (upgradeScreen.selectedUpgrade != -1) {
+      if (applyPlayerUpgrade(&player, upgradeScreen.selectedUpgrade)) {
+        game.state = PLAYING;
+        upgradeScreen.selectedUpgrade = -1;
+      }
+    }
+    break;
+  case PAUSED:
+    gameUpdatePausedScreen();
+    if (IsKeyPressed(KEY_ESCAPE)) {
+      pausedScreenOpen = false;
+      pauseScreenOpeningProgress = 0.0f;
+      game.state = PLAYING;
+    }
+    break;
+  }
+}
+
+void gameSetFullscreen() {
+  if (IsKeyPressed(KEY_F11)) {
+    ToggleBorderlessWindowed();
+  }
+}
+
+void gameResolutionDraw() {
+  BeginDrawing();
+  ClearBackground(WHITE);
+
+  float scale = fmin((float)GetScreenWidth() / GAME_WIDTH,
+                     (float)GetScreenHeight() / GAME_HEIGHT);
+
+  float scaledWidth = GAME_WIDTH * scale;
+  float scaledHeight = GAME_HEIGHT * scale;
+
+  float offsetX = (GetScreenWidth() - scaledWidth) * 0.5f;
+  float offsetY = (GetScreenHeight() - scaledHeight) * 0.5f;
+
+  Rectangle src = {
+      0, 0, (float)target.texture.width,
+      -(float)target.texture.height // flip vertically
+  };
+
+  Rectangle dst = {offsetX, offsetY, scaledWidth, scaledHeight};
+
+  DrawTexturePro(target.texture, src, dst, (Vector2){0, 0}, 0.0f, WHITE);
+
+  mousePos = GetMousePosition();
+
+  mousePos.x = (mousePos.x - offsetX) / scale;
+  mousePos.y = (mousePos.y - offsetY) / scale;
+  worldMouse = GetScreenToWorld2D(mousePos, camera);
+
+  EndDrawing();
+}
+
 void gameDraw() {
   BeginTextureMode(target);
 
@@ -859,30 +980,4 @@ void gameDraw() {
   EndTextureMode();
 
   gameResolutionDraw();
-}
-
-void resetGame() {
-  playerInit(&player, true);
-
-  for (int i = 0; i < ENEMY_NUM; i++) {
-    enemyDelete(enemy, i);
-  }
-
-  // Reset game function
-  game.score = 0;
-  game.enemiesKilled = 0;
-  game.timeSurvived = 0.0f;
-  game.scoreThresholdNum = 1;
-  // Reset game over stuff
-  gameOverRec = (Rectangle){390, -400, 500, 400};
-  gameOverRecVelY = 0.0f;
-  hasFallen = false;
-  gameOverRecGravity = 1.5f;
-  bounceCount = 0;
-  gameOverAnimationsDone = false;
-  playDeadAnimationTimer = 0.0f;
-
-  resetTimedEvent(&displayTimeSurvied, 1.5);
-  resetTimedEvent(&displayEnemiesKilled, 1.5);
-  resetTimedEvent(&displayScore, 2.0);
 }

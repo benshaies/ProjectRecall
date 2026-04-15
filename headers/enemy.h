@@ -5,7 +5,7 @@
 #include "player.h"
 #include "raylib.h"
 
-#define ENEMY_NUM 5
+#define ENEMY_NUM 6
 
 typedef enum {
   HIT,

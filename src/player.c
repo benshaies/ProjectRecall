@@ -172,7 +172,8 @@ void playerMovement(Player *player, Rectangle enemyAttackRec,
     player->animState = RUNNING;
 
     walkingSoundCount++;
-    if (walkingSoundCount >= 16) {
+    if (walkingSoundCount >= 20) {
+      SetSoundPitch(walkingSound, 0.95f + GetRandomValue(0, 10) * 0.01f);
       PlaySound(walkingSound);
       walkingSoundCount = 0;
     }
@@ -293,6 +294,9 @@ void axeUpdate(Player *player, Rectangle rec[], int recNum) {
                                   player->axe.attackPos.y - player->axe.rec.y};
       player->axe.dir = Vector2Normalize(player->axe.dir);
       player->axe.state = THROWN;
+
+      SetSoundPitch(throwSound, 0.95f + GetRandomValue(0, 10) * 0.01f);
+      PlaySound(throwSound);
     }
 
     break;
@@ -329,6 +333,9 @@ void axeUpdate(Player *player, Rectangle rec[], int recNum) {
       player->axe.dir = (Vector2){0, 0};
       player->axe.state = RECALL;
 
+      SetSoundPitch(recallSound, 0.95f + GetRandomValue(0, 10) * 0.01f);
+      PlaySound(recallSound);
+
       player->axe.throwSpeed = axeBaseSpeed;
     }
     break;
@@ -338,6 +345,9 @@ void axeUpdate(Player *player, Rectangle rec[], int recNum) {
       player->axe.dir = (Vector2){player->pos.x - 32.5 - player->axe.pos.x,
                                   player->pos.y - 32.5 - player->axe.pos.y};
       player->axe.state = RECALL;
+
+      SetSoundPitch(recallSound, 0.95f + GetRandomValue(0, 10) * 0.01f);
+      PlaySound(recallSound);
     }
     break;
 

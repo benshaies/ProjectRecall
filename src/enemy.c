@@ -74,7 +74,7 @@ void enemyInit(Enemy enemy[], Vector2 playerPos, int type, int scoreMilestone) {
                       0);
         enemy[i].speed = GetRandomValue(2, 3);
 
-        enemy[i].health = 50.0f + (50 * enemyHealthMultiplier);
+        enemy[i].health = 50.0f + (75 * enemyHealthMultiplier);
         enemy[i].baseHealth = enemy[i].health;
       }
       break;
