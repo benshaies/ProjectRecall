@@ -183,7 +183,8 @@ void playerMovement(Player *player, Rectangle enemyAttackRec,
   }
 
   // Add direction to player but first normalize
-  if (player->state == NOTHING || player->state == PULLING_IN) {
+  if (player->state == NOTHING || player->state == PULLING_IN ||
+      player->state == IMMUNITY) {
     player->dir = Vector2Normalize(player->dir);
     player->pos.x += player->dir.x * player->speed;
     player->pos.y += player->dir.y * player->speed;
@@ -224,9 +225,9 @@ void playerCollisions(Player *player, Rectangle rec[], int recNum) {
 
 bool checkPlayerHit(Player *player, Rectangle enemyAttackRec,
                     Vector2 enemyAttackingPos) {
-  if (player->upgradeLevels[IMMUNE_WHILE_PULLING_IN] == 0 ||
-      player->state != PULLING_IN) {
-
+  if ((player->upgradeLevels[IMMUNE_WHILE_PULLING_IN] == 0 ||
+       player->state != PULLING_IN) &&
+      (player->state != IMMUNITY)) {
     if (CheckCollisionRecs(enemyAttackRec, player->rec)) {
       player->state = HURT;
       player->knockbackDir =

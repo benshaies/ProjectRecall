@@ -97,9 +97,13 @@ int bounceCount = 0;
 Font font;
 
 TimedEvent displayTimeSurvied;
+float displayTimeSurvivedTimer = 0.75f;
 
 TimedEvent displayEnemiesKilled;
+float displayEnemiesKilledTimer = 0.75f;
+
 TimedEvent displayScore;
+float displayScoreTimer = 1.25f;
 
 Rectangle quitButtonRec = {440, 460, 150, 60};
 Rectangle quitButtonRecBase = {440, 460, 150, 60};
@@ -185,9 +189,9 @@ void gameInit() {
   upgradeStructInit(&upgradeScreen);
 
   // Define Reset timed event stuff
-  resetTimedEvent(&displayTimeSurvied, 1.5f);
-  resetTimedEvent(&displayEnemiesKilled, 1.5f);
-  resetTimedEvent(&displayScore, 2.0f);
+  resetTimedEvent(&displayTimeSurvied, displayTimeSurvivedTimer);
+  resetTimedEvent(&displayEnemiesKilled, displayEnemiesKilledTimer);
+  resetTimedEvent(&displayScore, displayScoreTimer);
 
   game.masterVolume = 0.5f;
 }
@@ -213,9 +217,9 @@ void resetGame() {
   gameOverAnimationsDone = false;
   playDeadAnimationTimer = 0.0f;
 
-  resetTimedEvent(&displayTimeSurvied, 1.5);
-  resetTimedEvent(&displayEnemiesKilled, 1.5);
-  resetTimedEvent(&displayScore, 2.0);
+  resetTimedEvent(&displayTimeSurvied, displayTimeSurvivedTimer);
+  resetTimedEvent(&displayEnemiesKilled, displayEnemiesKilledTimer);
+  resetTimedEvent(&displayScore, displayScoreTimer);
 }
 
 bool isHovering(Rectangle rec) {
@@ -655,18 +659,18 @@ void gamePlayingDraw() {
   }
 
   if (debugMode) {
-    switch (upgradeScreen.state) {
-    case NOT_ACTIVE:
-      DrawText("NOT_ACTIVE", 0, 0, 50, GREEN);
+    switch (player.state) {
+    case NOTHING:
+      DrawText("NOTHING", 0, 0, 50, GREEN);
       break;
-    case OPENING:
-      DrawText("OPENING", 0, 0, 50, GREEN);
+    case PULLING_IN:
+      DrawText("PULLING_IN", 0, 0, 50, GREEN);
       break;
-    case DONE_OPENING:
-      DrawText("DONE_OPENING", 0, 0, 50, GREEN);
+    case HURT:
+      DrawText("HURT", 0, 0, 50, GREEN);
       break;
-    case SELECTED:
-      DrawText("SELECTED", 0, 0, 50, GREEN);
+    case IMMUNITY:
+      DrawText("IMMUNITY", 0, 0, 50, GREEN);
       break;
     }
   }
@@ -846,7 +850,10 @@ void gameUpdate() {
     // DEBUG
     if (IsKeyPressed(KEY_U)) {
       startUpgrades = true;
+    } else if (IsKeyPressed(KEY_H)) {
+      enemyInit(enemy, player.pos, 1, game.scoreThresholdNum);
     }
+
     gamePlayingUpdate();
     if (startUpgrades) {
 
