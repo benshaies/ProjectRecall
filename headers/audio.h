@@ -3,7 +3,8 @@
 #include "raylib.h"
 
 extern Sound walkingSound, upgradeDisplaySound, upgradeUnlockedSound,
-    throwSound, recallSound, enemyHitSound;
+    throwSound, recallSound, enemyHitSound, deflectSound, upgradeSelectedSound,
+    playerHurtSound;
 
 extern Music gameplayMusic[3], menuMusic[3];
 

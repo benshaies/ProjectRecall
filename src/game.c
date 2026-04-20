@@ -135,6 +135,14 @@ bool gameplayMusicStarted = false;
 int currentMenuSong = 0;
 bool menuMusicStarted = false;
 
+// Menu variables
+Vector2 startTextPos = {390, 325};
+Vector2 guideTextPos = {400, 400};
+int textBobbingSpeed = 25;
+
+Rectangle menuBoomerangRec = {125, 500, 75, 75};
+int menuBoomerangSpeed = 750;
+
 void gameInit() {
   InitWindow(GAME_WIDTH, GAME_HEIGHT, "Project Recall");
   SetTargetFPS(60);
@@ -147,6 +155,7 @@ void gameInit() {
   font = LoadFontEx("../PixeloidSans-Bold.ttf", 64, 0, 0);
 
   game.state = MAIN_MENU;
+  game.menuState = MAIN;
   memset(&ps, 0, sizeof(ParticleSystem));
 
   texturesLoad();
@@ -400,10 +409,17 @@ void updateMusicVolume() {
   SetSoundVolume(recallSound, 0.1 * mv);
   SetSoundVolume(throwSound, 0.3 * mv);
   SetSoundVolume(enemyHitSound, 0.75 * mv);
+  SetSoundVolume(deflectSound, 0.1 * mv);
+  SetSoundVolume(upgradeSelectedSound, 0.5 * mv);
+  SetSoundVolume(playerHurtSound, 0.5 * mv);
 
   SetMusicVolume(gameplayMusic[0], 0.05 * mv);
   SetMusicVolume(gameplayMusic[1], 0.05 * mv);
   SetMusicVolume(gameplayMusic[2], 0.05 * mv);
+
+  SetMusicVolume(menuMusic[0], 0.15);
+  SetMusicVolume(menuMusic[1], 0.15);
+  SetMusicVolume(menuMusic[2], 0.15);
 }
 
 // UPGRADE SCREEN DRAW
@@ -516,6 +532,61 @@ void updateCamera() {
   cameraShake();
 }
 
+// MENU STATE FUNCTIONS
+void menuUpdate() {
+  switch (game.menuState) {
+  case MAIN:
+    if (IsKeyPressed(KEY_ENTER)) {
+      game.state = PLAYING;
+    }
+    if (IsKeyPressed(KEY_TAB)) {
+      game.menuState = GUIDE;
+    }
+
+    startTextPos.y += GetFrameTime() * textBobbingSpeed;
+    guideTextPos.y += GetFrameTime() * textBobbingSpeed;
+
+    if (startTextPos.y >= 340 || startTextPos.y < 325) {
+      textBobbingSpeed *= -1;
+    }
+
+    menuBoomerangRec.x += GetFrameTime() * menuBoomerangSpeed;
+
+    if (menuBoomerangRec.x >= 1080 || menuBoomerangRec.x < 125) {
+      menuBoomerangSpeed *= -1;
+    }
+
+    if (GetRandomValue(1, 3) == 1) {
+      spawnParticles(&ps, (Vector2){GetRandomValue(0, 1280), -50},
+                     0.25f * GetRandomValue(3, 7), boomerangTrailColor2,
+                     (Vector2){GetRandomValue(-10, 10), GetRandomValue(10, 50)},
+                     GetRandomValue(3, 6));
+    }
+
+    break;
+  case GUIDE:
+    if (IsKeyPressed(KEY_TAB)) {
+      game.menuState = MAIN;
+    }
+    break;
+  }
+}
+
+void menuDraw() {
+  switch (game.menuState) {
+  case MAIN:
+    DrawTexturePro(mainMenuTexture, (Rectangle){0, 0, 1280, 720},
+                   (Rectangle){0, 0, 1280, 720}, (Vector2){0, 0}, 0.0f, WHITE);
+    DrawTextEx(font, "[ENTER] - START GAME", startTextPos, 40, 3, WHITE);
+    DrawTextEx(font, "[TAB] - GUIDE SCREEN", guideTextPos, 40, 3, WHITE);
+
+    playAnimation(&player.axe.anim, menuBoomerangRec, 1, 0.05f);
+    break;
+
+  case GUIDE:
+  }
+}
+
 // PLAYING STATE FUNCTIONS
 void gamePlayingUpdate() {
   gameSetFullscreen();
@@ -572,6 +643,8 @@ void gamePlayingUpdate() {
       isBoomerangDeflected = true;
       spawnParticlesExpandingRing(&ps, player.axe.pos, 0.2, WHITE, 5, 10, 20);
       screenShake = 20;
+      SetSoundPitch(deflectSound, GetRandomValue(3, 5) * 0.20);
+      PlaySound(deflectSound);
     }
     // Reset deflected boolean
     if (player.axe.state != THROWN) {
@@ -833,9 +906,10 @@ void gameUpdate() {
 
   switch (game.state) {
   case MAIN_MENU:
-    if (IsKeyPressed(KEY_TAB)) {
-      game.state = PLAYING;
-    }
+    menuUpdate();
+    updateParticles(&ps);
+    updateMenuMusic();
+    updateMusicVolume();
     break;
   case PLAYING:
 
@@ -961,8 +1035,8 @@ void gameDraw() {
 
   switch (game.state) {
   case MAIN_MENU:
-    DrawTexturePro(mainMenuTexture, (Rectangle){0, 0, 1280, 720},
-                   (Rectangle){0, 0, 1280, 720}, (Vector2){0, 0}, 0.0f, WHITE);
+    menuDraw();
+    drawParticles(&ps);
     break;
   case PLAYING:
     gamePlayingDraw();

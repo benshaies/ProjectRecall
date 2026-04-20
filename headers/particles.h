@@ -3,40 +3,42 @@
 #include <raylib.h>
 #define MAX_PARTICLES 1024
 
-    typedef enum{
-        NORMAL,
-        EXPANDING_RING,
-    }ParticleType;
-    
-    typedef struct{
-        ParticleType type;
+typedef enum {
+  NORMAL,
+  EXPANDING_RING,
+} ParticleType;
 
-       //Normal particle variables 
-       Vector2 pos;
-       bool active;
-       float life;
-       float lifeMax;
-       Color color;
-       Vector2 velocity;
-       float size;
+typedef struct {
+  ParticleType type;
 
-       //Expanding Specific variables
-       float expandingRate;
-       float ringThickness;
+  // Normal particle variables
+  Vector2 pos;
+  bool active;
+  float life;
+  float lifeMax;
+  Color color;
+  Vector2 velocity;
+  float size;
 
-       
-    }Particle;
+  // Expanding Specific variables
+  float expandingRate;
+  float ringThickness;
 
-    typedef struct{
-        Particle pool[MAX_PARTICLES];
-    }ParticleSystem;
+} Particle;
 
-    void spawnParticles(ParticleSystem *ps, Vector2 pos, float lifeMax, Color color, Vector2 velocity, float size);
+typedef struct {
+  Particle pool[MAX_PARTICLES];
+} ParticleSystem;
 
-    void spawnParticlesExpandingRing(ParticleSystem *ps, Vector2 pos, float lifeMax, Color color, float size, float expandingRate, float ringThickness);
+void spawnParticles(ParticleSystem *ps, Vector2 pos, float lifeMax, Color color,
+                    Vector2 velocity, float size);
 
-    void updateParticles(ParticleSystem *ps);
+void spawnParticlesExpandingRing(ParticleSystem *ps, Vector2 pos, float lifeMax,
+                                 Color color, float size, float expandingRate,
+                                 float ringThickness);
 
-    void drawParticles(ParticleSystem *ps);
+void updateParticles(ParticleSystem *ps);
+
+void drawParticles(ParticleSystem *ps);
 
 #endif

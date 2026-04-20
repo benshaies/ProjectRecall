@@ -7,6 +7,11 @@ extern Vector2 mousePos;
 extern Vector2 worldMouse;
 
 typedef enum {
+  MAIN,
+  GUIDE,
+} MenuState;
+
+typedef enum {
   MAIN_MENU,
   PLAYING,
   DYING_TRANSITION,
@@ -40,6 +45,8 @@ typedef struct {
   float timeSurvived;
 
   float masterVolume;
+
+  MenuState menuState;
 } Game;
 
 void gameInit();

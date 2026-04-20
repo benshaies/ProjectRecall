@@ -132,6 +132,7 @@ void updateUpgradeScreen(UpgradeScreen *up, Vector2 mousePos) {
         if (up->isHovering[i] && IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
           up->selectedUpgrade = up->upgrade[i];
           up->state = SELECTED;
+          PlaySound(upgradeSelectedSound);
           break;
         }
       } else {

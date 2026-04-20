@@ -2,7 +2,8 @@
 #include "raylib.h"
 
 Sound walkingSound, upgradeDisplaySound, upgradeUnlockedSound, throwSound,
-    recallSound, enemyHitSound;
+    recallSound, enemyHitSound, deflectSound, upgradeSelectedSound,
+    playerHurtSound;
 
 Music gameplayMusic[3], menuMusic[3];
 
@@ -14,6 +15,9 @@ void audioFileLoad() {
   throwSound = LoadSound("../audio/sound/throw.wav");
   recallSound = LoadSound("../audio/sound/recall.wav");
   enemyHitSound = LoadSound("../audio/sound/enemyHit.wav");
+  deflectSound = LoadSound("../audio/sound/deflect.wav");
+  upgradeSelectedSound = LoadSound("../audio/sound/upgradeSelected.wav");
+  playerHurtSound = LoadSound("../audio/sound/playerHurt.wav");
 
   // MUSIC
   gameplayMusic[0] = LoadMusicStream(
@@ -44,6 +48,9 @@ void audioFileUnload() {
   UnloadSound(throwSound);
   UnloadSound(recallSound);
   UnloadSound(enemyHitSound);
+  UnloadSound(deflectSound);
+  UnloadSound(upgradeSelectedSound);
+  UnloadSound(playerHurtSound);
 
   UnloadMusicStream(gameplayMusic[0]);
   UnloadMusicStream(gameplayMusic[1]);

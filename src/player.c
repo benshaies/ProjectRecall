@@ -233,6 +233,8 @@ bool checkPlayerHit(Player *player, Rectangle enemyAttackRec,
       player->knockbackDir =
           Vector2Normalize((Vector2){player->pos.x - enemyAttackingPos.x,
                                      player->pos.y - enemyAttackingPos.y});
+      SetSoundPitch(playerHurtSound, GetRandomValue(3, 5) * 0.20);
+      PlaySound(playerHurtSound);
       return true;
     } else {
       return false;
