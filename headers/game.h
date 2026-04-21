@@ -6,6 +6,12 @@
 extern Vector2 mousePos;
 extern Vector2 worldMouse;
 
+#define SAVE_FILE "save.dat"
+
+typedef struct {
+  int highScore;
+} SaveData;
+
 typedef enum {
   MAIN,
   GUIDE,
@@ -40,6 +46,7 @@ typedef struct {
 
   int score;
   int scoreThresholdNum;
+  int highScore;
 
   int enemiesKilled;
   float timeSurvived;
@@ -47,6 +54,7 @@ typedef struct {
   float masterVolume;
 
   MenuState menuState;
+
 } Game;
 
 void gameInit();

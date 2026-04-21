@@ -124,6 +124,10 @@ bool gameOverAnimationsDone = false;
 bool pausedScreenOpen = false;
 float pauseScreenOpeningProgress = 0.0f;
 Rectangle pausedScreenRec = {390, 160, 500, 400};
+bool playGameplayMusic = true;
+Rectangle playGameplayMusicRec = {390 + 50, 160 + 200, 25, 25};
+
+Rectangle quitToMainMenuButtonRec = {560, 460, 150, 60};
 
 // Playing to gamepver transition variable
 float playDeadAnimationTimer = 0;
@@ -142,6 +146,25 @@ int textBobbingSpeed = 25;
 
 Rectangle menuBoomerangRec = {125, 500, 75, 75};
 int menuBoomerangSpeed = 750;
+
+void SaveHighScore(int score) {
+  FILE *f = fopen(SAVE_FILE, "wb");
+  if (!f)
+    return;
+  SaveData data = {score};
+  fwrite(&data, sizeof(SaveData), 1, f);
+  fclose(f);
+}
+
+int LoadHighScore(void) {
+  FILE *f = fopen(SAVE_FILE, "rb");
+  if (!f)
+    return 0; // no save file yet, default to 0
+  SaveData data = {0};
+  fread(&data, sizeof(SaveData), 1, f);
+  fclose(f);
+  return data.highScore;
+}
 
 void gameInit() {
   InitWindow(GAME_WIDTH, GAME_HEIGHT, "Project Recall");
@@ -191,6 +214,7 @@ void gameInit() {
 
   game.score = 0;
   game.scoreThresholdNum = 1;
+  game.highScore = LoadHighScore();
 
   game.enemiesKilled = 0;
   game.timeSurvived = 0.0f;
@@ -204,6 +228,8 @@ void gameInit() {
 
   game.masterVolume = 0.5f;
 }
+
+// SAVE FILE FUNCTIONS
 
 void resetGame() {
   playerInit(&player, true);
@@ -404,22 +430,22 @@ void updateMusicVolume() {
   float mv = game.masterVolume;
 
   SetSoundVolume(walkingSound, 0.25 * mv);
-  SetSoundVolume(upgradeDisplaySound, 0.3 * mv);
-  SetSoundVolume(upgradeUnlockedSound, 0.3 * mv);
-  SetSoundVolume(recallSound, 0.1 * mv);
-  SetSoundVolume(throwSound, 0.3 * mv);
-  SetSoundVolume(enemyHitSound, 0.75 * mv);
-  SetSoundVolume(deflectSound, 0.1 * mv);
-  SetSoundVolume(upgradeSelectedSound, 0.5 * mv);
-  SetSoundVolume(playerHurtSound, 0.5 * mv);
+  SetSoundVolume(upgradeDisplaySound, 0.7 * mv);
+  SetSoundVolume(upgradeUnlockedSound, 0.7 * mv);
+  SetSoundVolume(recallSound, 0.40 * mv);
+  SetSoundVolume(throwSound, 0.50 * mv);
+  SetSoundVolume(enemyHitSound, 2.0 * mv);
+  SetSoundVolume(deflectSound, 0.25 * mv);
+  SetSoundVolume(upgradeSelectedSound, 0.3 * mv);
+  SetSoundVolume(playerHurtSound, 0.7 * mv);
 
-  SetMusicVolume(gameplayMusic[0], 0.05 * mv);
-  SetMusicVolume(gameplayMusic[1], 0.05 * mv);
-  SetMusicVolume(gameplayMusic[2], 0.05 * mv);
+  SetMusicVolume(gameplayMusic[0], 0.10 * mv);
+  SetMusicVolume(gameplayMusic[1], 0.10 * mv);
+  SetMusicVolume(gameplayMusic[2], 0.10 * mv);
 
-  SetMusicVolume(menuMusic[0], 0.15);
-  SetMusicVolume(menuMusic[1], 0.15);
-  SetMusicVolume(menuMusic[2], 0.15);
+  SetMusicVolume(menuMusic[0], 0.25);
+  SetMusicVolume(menuMusic[1], 0.25);
+  SetMusicVolume(menuMusic[2], 0.25);
 }
 
 // UPGRADE SCREEN DRAW
@@ -432,6 +458,18 @@ void gameUpdatePausedScreen() {
     if (pauseScreenOpeningProgress >= 1.0f) {
       pauseScreenOpeningProgress = 1.0f;
       pausedScreenOpen = true;
+    }
+  }
+
+  if (pausedScreenOpen) {
+    if (isHovering(playGameplayMusicRec) &&
+        IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
+      playGameplayMusic = !playGameplayMusic;
+    }
+
+    if (isHovering(quitToMainMenuButtonRec) &&
+        IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
+      game.state = MAIN_MENU;
     }
   }
 }
@@ -477,6 +515,26 @@ void gameDrawPausedScreen() {
                3, quitButtonColor);
 
     DrawVolumeSlider(mousePos, &game.masterVolume);
+
+    DrawRectangleLinesEx(playGameplayMusicRec, 5.0, quitButtonColor);
+
+    DrawTextEx(font, "Play Arena Music",
+               (Vector2){playGameplayMusicRec.x + 100, playGameplayMusicRec.y},
+               30, 3, quitButtonColor);
+
+    if (playGameplayMusic) {
+      DrawRectangle(playGameplayMusicRec.x + 5, playGameplayMusicRec.y + 5,
+                    playGameplayMusicRec.width - 10,
+                    playGameplayMusicRec.height - 10, WHITE);
+    }
+
+    DrawRectangleRounded(quitToMainMenuButtonRec, 0.25, 1,
+                         isHovering(quitToMainMenuButtonRec) ? secondaryColor
+                                                             : quitButtonColor);
+    DrawTextEx(
+        font, TextFormat("Main \nMenu"),
+        (Vector2){quitToMainMenuButtonRec.x + 30, quitToMainMenuButtonRec.y},
+        30, 2, WHITE);
   }
 }
 
@@ -556,13 +614,6 @@ void menuUpdate() {
       menuBoomerangSpeed *= -1;
     }
 
-    if (GetRandomValue(1, 3) == 1) {
-      spawnParticles(&ps, (Vector2){GetRandomValue(0, 1280), -50},
-                     0.25f * GetRandomValue(3, 7), boomerangTrailColor2,
-                     (Vector2){GetRandomValue(-10, 10), GetRandomValue(10, 50)},
-                     GetRandomValue(3, 6));
-    }
-
     break;
   case GUIDE:
     if (IsKeyPressed(KEY_TAB)) {
@@ -622,8 +673,7 @@ void gamePlayingUpdate() {
       screenShake = screenShakeFrameBase;
       hitStopTimer = hitStopTime * 2;
 
-      SetSoundPitch(enemyHitSound,
-                    1.5f + (float)GetRandomValue(0, 10) / 100.0f);
+      SetSoundPitch(enemyHitSound, GetRandomValue(3, 4) * 0.45);
       PlaySound(enemyHitSound);
     }
     // Enemy killed and spawn particles
@@ -728,7 +778,9 @@ void gamePlayingDraw() {
 
   // Score display
   if (game.state != DEAD) {
-    DrawText((TextFormat("%d", game.score)), 1150, 5, 50, WHITE);
+    DrawTexture(scoreDisplayTexture, 1125, 5, WHITE);
+    DrawTextEx(font, TextFormat("%d", game.score), (Vector2){1190, 17.5}, 50, 0,
+               quitButtonColor);
   }
 
   if (debugMode) {
@@ -777,6 +829,11 @@ void gameUpdateDeadScreen() {
       if (updateTimedEvent(&displayEnemiesKilled)) {
         if (updateTimedEvent(&displayScore)) {
           gameOverAnimationsDone = true;
+
+          if (game.score > game.highScore) {
+            game.highScore = game.score;
+            SaveHighScore(game.highScore);
+          }
         }
       }
     }
@@ -912,7 +969,7 @@ void gameUpdate() {
     updateMusicVolume();
     break;
   case PLAYING:
-
+    printf("%d\n", game.highScore);
     if (IsKeyPressed(KEY_TAB)) {
       game.state = MAIN_MENU;
     }
@@ -956,7 +1013,9 @@ void gameUpdate() {
     }
 
     // GAMEPLAY MUSIC PLAYING
-    updateGameplayMusic();
+    if (playGameplayMusic) {
+      updateGameplayMusic();
+    }
 
     break;
   case DYING_TRANSITION:
