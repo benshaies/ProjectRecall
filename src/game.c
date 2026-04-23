@@ -12,6 +12,7 @@
 #include "stdio.h"
 #include <math.h>
 #define RAYGUI_IMPLEMENTATION
+#include "../headers/transition.h"
 #include "stdlib.h"
 #include <raygui.h>
 #include <string.h>
@@ -123,6 +124,7 @@ bool gameOverAnimationsDone = false;
 bool isGameOverSoundPlayed = false;
 bool isNewHighScore = false;
 int newHighScoreFrameCount = 0;
+float newHighScoreDisplayTimer = 0.0f;
 
 // Paused screen variables
 
@@ -151,6 +153,9 @@ int textBobbingSpeed = 25;
 
 Rectangle menuBoomerangRec = {390, 500, 75, 75};
 int menuBoomerangSpeed = 750;
+
+// Transition variables
+float ringDistance = 1280;
 
 void SaveHighScore(int score) {
   FILE *f = fopen(SAVE_FILE, "wb");
@@ -244,6 +249,8 @@ void resetGame() {
   for (int i = 0; i < ENEMY_NUM; i++) {
     enemyDelete(enemy, i);
   }
+
+  quitButtonColor = buttonColor;
 
   // Reset game function
   game.score = 0;
@@ -793,6 +800,15 @@ void gamePlayingDraw() {
     drawParticles(&ps);
   }
 
+  if (game.state == DYING_TRANSITION || game.state == DEAD) {
+
+    if (ringDistance > 100)
+      ringDistance -= 15;
+
+    DrawRing(player.pos, ringDistance, 10000, 0, 360, 1, BLACK);
+  } else
+    ringDistance = 1280;
+
   EndMode2D();
 
   // Draw player health
@@ -991,10 +1007,34 @@ void gameDeadScreenDraw() {
       displayScore.particleTriggered = true;
     }
 
-    // if (isNewHighScore) {
-    DrawTextEx(font, "HIGHSCORE", (Vector2){xPos + 100, gameOverRec.y + 250},
-               40, 3, GOLD);
-    //}
+    // new high score display
+    if (isNewHighScore) {
+      newHighScoreDisplayTimer += GetFrameTime();
+      if (newHighScoreDisplayTimer >= 1.5f) {
+        newHighScoreFrameCount++;
+        Color textColor;
+
+        if (newHighScoreFrameCount >= 16) {
+          textColor = quitButtonColor;
+          if (newHighScoreFrameCount >= 20) {
+            newHighScoreFrameCount = 0;
+          }
+        } else {
+          textColor = GOLD;
+        }
+
+        DrawTextEx(font, "NEW HIGHSCORE",
+                   (Vector2){xPos - 140, gameOverRec.y + gameOverRec.height},
+                   40, 3, textColor);
+      }
+      if (newHighScoreDisplayTimer >= 1.3f &&
+          newHighScoreDisplayTimer <= 1.5f) {
+        PlaySound(newHighScoreDisplaySound);
+      }
+    } else {
+      newHighScoreDisplayTimer = 0.0f;
+      newHighScoreFrameCount = 0;
+    }
   }
 
   if (displayScore.triggered) {
@@ -1163,7 +1203,9 @@ void gameDraw() {
     gamePlayingDraw();
     break;
   case DYING_TRANSITION:
+
     gamePlayingDraw();
+
     break;
   case DEAD:
     gamePlayingDraw();

@@ -57,6 +57,10 @@ typedef struct {
 
   MenuState menuState;
 
+  bool transToPlaying;
+  bool transToMenu;
+  bool transPlayingToPlaying;
+
 } Game;
 
 void gameInit();

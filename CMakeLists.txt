@@ -49,6 +49,7 @@ set(SOURCES
     ../src/particles.c
     ../src/upgrade.c
     ../src/audio.c
+    ../src/transition.c
 )
 
 # Create executable
