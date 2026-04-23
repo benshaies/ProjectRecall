@@ -3,7 +3,10 @@
 
 Sound walkingSound, upgradeDisplaySound, upgradeUnlockedSound, throwSound,
     recallSound, enemyHitSound, deflectSound, upgradeSelectedSound,
-    playerHurtSound;
+    playerHurtSound, upgradeCardHoverSound, gameOverSound,
+    gameOverScreenFallSound;
+
+Sound otherStatsDisplaySound, scoreDisplaySound, newHighScoreDisplaySound;
 
 Music gameplayMusic[3], menuMusic[3];
 
@@ -18,6 +21,12 @@ void audioFileLoad() {
   deflectSound = LoadSound("../audio/sound/deflect.wav");
   upgradeSelectedSound = LoadSound("../audio/sound/upgradeSelected.wav");
   playerHurtSound = LoadSound("../audio/sound/playerHurt.wav");
+  upgradeCardHoverSound = LoadSound("../audio/sound/upgradeCardHover.mp3");
+  gameOverSound = LoadSound("../audio/sound/gameOver.mp3");
+  gameOverScreenFallSound = LoadSound("../audio/sound/gameOverScreenFall.wav");
+  otherStatsDisplaySound = LoadSound("../audio/sound/otherStatsDiplay.mp3");
+  scoreDisplaySound = LoadSound("../audio/sound/scoreDisplay.mp3");
+  newHighScoreDisplaySound = LoadSound("../audio/sound/newHighScore.mp3");
 
   // MUSIC
   gameplayMusic[0] = LoadMusicStream(
@@ -51,6 +60,12 @@ void audioFileUnload() {
   UnloadSound(deflectSound);
   UnloadSound(upgradeSelectedSound);
   UnloadSound(playerHurtSound);
+  UnloadSound(upgradeCardHoverSound);
+  UnloadSound(gameOverSound);
+  UnloadSound(gameOverScreenFallSound);
+  UnloadSound(otherStatsDisplaySound);
+  UnloadSound(scoreDisplaySound);
+  UnloadSound(newHighScoreDisplaySound);
 
   UnloadMusicStream(gameplayMusic[0]);
   UnloadMusicStream(gameplayMusic[1]);

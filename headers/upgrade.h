@@ -1,57 +1,56 @@
 #ifndef UPGRADE_H
 #define UPGRADE_H
-#include <raylib.h>
 #include "../headers/particles.h"
+#include <raylib.h>
 
 #define NUMBER_OF_UPGRADES 6
 
-    typedef enum{
-        BIGGER_WEAPON,
-        FASTER_WEAPON,
-        INCREASED_DAMAGE,
-        
-        INCREASE_PLAYER_SPEED,
-        GAIN_HEALTH,
-        IMMUNE_WHILE_PULLING_IN,
-    }Upgrades;
+typedef enum {
+  BIGGER_WEAPON,
+  FASTER_WEAPON,
+  INCREASED_DAMAGE,
 
-    typedef enum{
-        NOT_ACTIVE,
-        OPENING,
-        DONE_OPENING,
-        SELECTED,
-        CLOSING,
-        
-    }UpgradeScreenState;
+  INCREASE_PLAYER_SPEED,
+  GAIN_HEALTH,
+  IMMUNE_WHILE_PULLING_IN,
+} Upgrades;
 
-    typedef struct{
-        bool active;
+typedef enum {
+  NOT_ACTIVE,
+  OPENING,
+  DONE_OPENING,
+  SELECTED,
+  CLOSING,
 
-        float openingProgress[3];
-        int currentOpening;
+} UpgradeScreenState;
 
-        Rectangle upgradeRecs[3];
-        Rectangle baseUpgradeRecs[3];
-        bool isHovering[3];
-        Upgrades upgrade[3];
-        int upgradeLevels[NUMBER_OF_UPGRADES];
+typedef struct {
+  bool active;
 
-        Upgrades selectedUpgrade;
+  float openingProgress[3];
+  int currentOpening;
 
-        UpgradeScreenState state;
-    }UpgradeScreen;
+  Rectangle upgradeRecs[3];
+  Rectangle baseUpgradeRecs[3];
+  bool isHovering[3];
+  Upgrades upgrade[3];
+  int upgradeLevels[NUMBER_OF_UPGRADES];
+  bool isHoveringSoundPlayed[3];
 
+  Upgrades selectedUpgrade;
 
-    void upgradeStructInit(UpgradeScreen *up);
+  UpgradeScreenState state;
+} UpgradeScreen;
 
-    void createUpgrades(UpgradeScreen *up, bool playerImmunePullingIn, bool isHealthFull);
+void upgradeStructInit(UpgradeScreen *up);
 
-    void resetUpgradeUI(UpgradeScreen *up);
+void createUpgrades(UpgradeScreen *up, bool playerImmunePullingIn,
+                    bool isHealthFull);
 
-    void updateUpgradeScreen(UpgradeScreen *up, Vector2 mousePos);
+void resetUpgradeUI(UpgradeScreen *up);
 
-    void drawUpgrades(UpgradeScreen *up, Font font);
-    
+void updateUpgradeScreen(UpgradeScreen *up, Vector2 mousePos);
 
+void drawUpgrades(UpgradeScreen *up, Font font);
 
 #endif

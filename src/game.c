@@ -10,6 +10,7 @@
 #include "raylib.h"
 #include "raymath.h"
 #include "stdio.h"
+#include <math.h>
 #define RAYGUI_IMPLEMENTATION
 #include "stdlib.h"
 #include <raygui.h>
@@ -119,6 +120,10 @@ Rectangle playAgainButtonRecBase = {690, 460, 150, 60};
 
 bool gameOverAnimationsDone = false;
 
+bool isGameOverSoundPlayed = false;
+bool isNewHighScore = false;
+int newHighScoreFrameCount = 0;
+
 // Paused screen variables
 
 bool pausedScreenOpen = false;
@@ -144,7 +149,7 @@ Vector2 startTextPos = {390, 325};
 Vector2 guideTextPos = {400, 400};
 int textBobbingSpeed = 25;
 
-Rectangle menuBoomerangRec = {125, 500, 75, 75};
+Rectangle menuBoomerangRec = {390, 500, 75, 75};
 int menuBoomerangSpeed = 750;
 
 void SaveHighScore(int score) {
@@ -222,9 +227,11 @@ void gameInit() {
   upgradeStructInit(&upgradeScreen);
 
   // Define Reset timed event stuff
-  resetTimedEvent(&displayTimeSurvied, displayTimeSurvivedTimer);
-  resetTimedEvent(&displayEnemiesKilled, displayEnemiesKilledTimer);
-  resetTimedEvent(&displayScore, displayScoreTimer);
+  resetTimedEvent(&displayTimeSurvied, displayTimeSurvivedTimer,
+                  otherStatsDisplaySound);
+  resetTimedEvent(&displayEnemiesKilled, displayEnemiesKilledTimer,
+                  otherStatsDisplaySound);
+  resetTimedEvent(&displayScore, displayScoreTimer, scoreDisplaySound);
 
   game.masterVolume = 0.5f;
 }
@@ -252,9 +259,13 @@ void resetGame() {
   gameOverAnimationsDone = false;
   playDeadAnimationTimer = 0.0f;
 
-  resetTimedEvent(&displayTimeSurvied, displayTimeSurvivedTimer);
-  resetTimedEvent(&displayEnemiesKilled, displayEnemiesKilledTimer);
-  resetTimedEvent(&displayScore, displayScoreTimer);
+  resetTimedEvent(&displayTimeSurvied, displayTimeSurvivedTimer,
+                  otherStatsDisplaySound);
+  resetTimedEvent(&displayEnemiesKilled, displayEnemiesKilledTimer,
+                  otherStatsDisplaySound);
+  resetTimedEvent(&displayScore, displayScoreTimer, scoreDisplaySound);
+
+  isNewHighScore = false;
 }
 
 bool isHovering(Rectangle rec) {
@@ -438,6 +449,12 @@ void updateMusicVolume() {
   SetSoundVolume(deflectSound, 0.25 * mv);
   SetSoundVolume(upgradeSelectedSound, 0.3 * mv);
   SetSoundVolume(playerHurtSound, 0.7 * mv);
+  SetSoundVolume(upgradeCardHoverSound, 0.5 * mv);
+  SetSoundVolume(gameOverSound, 0.5 * mv);
+  SetSoundVolume(gameOverScreenFallSound, 0.5 * mv);
+  SetSoundVolume(otherStatsDisplaySound, 0.5 * mv);
+  SetSoundVolume(scoreDisplaySound, 0.5 * mv);
+  SetSoundVolume(newHighScoreDisplaySound, 0.5 * mv);
 
   SetMusicVolume(gameplayMusic[0], 0.10 * mv);
   SetMusicVolume(gameplayMusic[1], 0.10 * mv);
@@ -539,11 +556,13 @@ void gameDrawPausedScreen() {
 }
 
 // TIMED EVENT FUNCTIONS
-void resetTimedEvent(TimedEvent *event, float delay) {
+void resetTimedEvent(TimedEvent *event, float delay, Sound soundEffect) {
   event->triggered = false;
   event->delay = delay;
   event->timer = 0.0f;
   event->particleTriggered = false;
+
+  event->soundEffect = soundEffect;
 }
 
 bool updateTimedEvent(TimedEvent *event) {
@@ -552,6 +571,7 @@ bool updateTimedEvent(TimedEvent *event) {
 
     if (event->timer >= event->delay) {
       event->triggered = true;
+      PlaySound(event->soundEffect);
     }
   }
 
@@ -608,7 +628,7 @@ void menuUpdate() {
       textBobbingSpeed *= -1;
     }
 
-    menuBoomerangRec.x += GetFrameTime() * menuBoomerangSpeed;
+    // menuBoomerangRec.x += GetFrameTime() * menuBoomerangSpeed;
 
     if (menuBoomerangRec.x >= 1080 || menuBoomerangRec.x < 125) {
       menuBoomerangSpeed *= -1;
@@ -631,6 +651,17 @@ void menuDraw() {
     DrawTextEx(font, "[ENTER] - START GAME", startTextPos, 40, 3, WHITE);
     DrawTextEx(font, "[TAB] - GUIDE SCREEN", guideTextPos, 40, 3, WHITE);
 
+    if (game.highScore > 0) {
+      DrawTextEx(font, "HIGHSCORE:", (Vector2){475, 510}, 50, 3,
+                 (Color){254, 174, 52, 255});
+
+      Vector2 size =
+          MeasureTextEx(font, TextFormat("%d", game.highScore), 50, 3);
+
+      DrawRectangle(475 + 315, 510, size.x + 15, 50, quitButtonColor);
+      DrawTextEx(font, TextFormat("%d", game.highScore),
+                 (Vector2){475 + 325, 510}, 50, 3, WHITE);
+    }
     playAnimation(&player.axe.anim, menuBoomerangRec, 1, 0.05f);
     break;
 
@@ -743,6 +774,11 @@ void gamePlayingDraw() {
 
   // FLoor
   drawFloor(game.floorArray);
+  DrawTexturePro(floorBloodTileTexture, (Rectangle){0, 0, 16, 16},
+                 (Rectangle){500, 100, 100, 100}, (Vector2){0, 0}, 0.0f, WHITE);
+  DrawTexturePro(floorBloodTileTexture, (Rectangle){0, 0, 16, 16},
+                 (Rectangle){700, 100, 100, 100}, (Vector2){0, 0}, 0.0f, WHITE);
+
   // Walls
   drawLevel(game.levelArray, 0);
   // Props
@@ -779,7 +815,10 @@ void gamePlayingDraw() {
   // Score display
   if (game.state != DEAD) {
     DrawTexture(scoreDisplayTexture, 1125, 5, WHITE);
-    DrawTextEx(font, TextFormat("%d", game.score), (Vector2){1190, 17.5}, 50, 0,
+
+    Vector2 size = MeasureTextEx(font, TextFormat("%d", game.score), 50, 0);
+    float xPos = 1200 - (31.25 / 2 * (size.x / 31.25));
+    DrawTextEx(font, TextFormat("%d", game.score), (Vector2){xPos, 17.5}, 50, 0,
                quitButtonColor);
   }
 
@@ -812,6 +851,11 @@ void gameUpdateDeadScreen() {
     gameOverRecVelY *= 0.75f;
     gameOverRecVelY *= -1;
     bounceCount++;
+
+    if (!hasFallen) {
+      SetSoundPitch(gameOverScreenFallSound, GetRandomValue(4, 5) * 0.20f);
+      PlaySound(gameOverScreenFallSound);
+    }
   }
 
   if (bounceCount >= 4) {
@@ -833,6 +877,7 @@ void gameUpdateDeadScreen() {
           if (game.score > game.highScore) {
             game.highScore = game.score;
             SaveHighScore(game.highScore);
+            isNewHighScore = true;
           }
         }
       }
@@ -869,6 +914,10 @@ void gameUpdateDeadScreen() {
           .height = quitButtonRecBase.height + 5,
       };
 
+      if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
+        resetGame();
+        game.state = MAIN_MENU;
+      }
     } else {
       quitButtonColor = buttonColor;
       quitButtonRec = quitButtonRecBase;
@@ -928,9 +977,11 @@ void gameDeadScreenDraw() {
   }
 
   if (displayScore.triggered) {
+    Vector2 size = MeasureTextEx(font, TextFormat("%d", game.score), 50, 3);
+    float xPos = (gameOverRec.x + 255) - (31.25 / 2 * (size.x / 31.25));
+
     DrawTextEx(font, TextFormat("%d", game.score),
-               (Vector2){gameOverRec.x + 225, gameOverRec.y + 250}, 50, 3,
-               WHITE);
+               (Vector2){xPos, gameOverRec.y + 250}, 50, 3, WHITE);
 
     if (!displayScore.particleTriggered) {
       spawnParticlesExpandingRing(
@@ -939,6 +990,11 @@ void gameDeadScreenDraw() {
       screenShake = screenShakeFrameBase + 10;
       displayScore.particleTriggered = true;
     }
+
+    // if (isNewHighScore) {
+    DrawTextEx(font, "HIGHSCORE", (Vector2){xPos + 100, gameOverRec.y + 250},
+               40, 3, GOLD);
+    //}
   }
 
   if (displayScore.triggered) {
@@ -969,7 +1025,7 @@ void gameUpdate() {
     updateMusicVolume();
     break;
   case PLAYING:
-    printf("%d\n", game.highScore);
+    // DEBUG
     if (IsKeyPressed(KEY_TAB)) {
       game.state = MAIN_MENU;
     }
@@ -1020,8 +1076,14 @@ void gameUpdate() {
     break;
   case DYING_TRANSITION:
     playDeadAnimationTimer += GetFrameTime();
+
+    if (!isGameOverSoundPlayed) {
+      PlaySound(gameOverSound);
+      isGameOverSoundPlayed = true;
+    }
     if (playDeadAnimationTimer >= 4.5f) {
       game.state = DEAD;
+      isGameOverSoundPlayed = false;
     }
     break;
   case DEAD:

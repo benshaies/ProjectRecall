@@ -32,6 +32,8 @@ typedef struct {
   float delay;
   bool triggered;
   bool particleTriggered;
+
+  Sound soundEffect;
 } TimedEvent;
 
 typedef struct {
@@ -62,7 +64,7 @@ void gameInit();
 void gameSetFullscreen();
 
 void gameUpdate();
-void resetTimedEvent(TimedEvent *event, float delay);
+void resetTimedEvent(TimedEvent *event, float delay, Sound soundEffect);
 
 bool updateTimedEvent(TimedEvent *event);
 

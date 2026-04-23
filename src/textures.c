@@ -12,6 +12,7 @@ Texture2D upgradeScreenBaseTexture;
 Texture2D upgradeTextures[NUMBER_OF_UPGRADES];
 Texture2D gameOverTexture;
 Texture2D mainMenuTexture, scoreDisplayTexture;
+Texture floorBloodTileTexture;
 
 void texturesLoad() {
   playerIdleTexture = LoadTexture("../assets/playerIdle.png");
@@ -58,6 +59,8 @@ void texturesLoad() {
 
   scoreDisplayTexture = LoadTexture("../assets/scoreDisplay.png");
 
+  floorBloodTileTexture = LoadTexture("../assets/floorBloodTile.png");
+
   SetTextureFilter(levelTilesetTexture, TEXTURE_FILTER_POINT);
 }
 
@@ -95,4 +98,6 @@ void texturesUnload() {
   UnloadTexture(gameOverTexture);
 
   UnloadTexture(mainMenuTexture);
+
+  UnloadTexture(floorBloodTileTexture);
 }

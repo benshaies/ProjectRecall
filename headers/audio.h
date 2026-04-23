@@ -4,7 +4,11 @@
 
 extern Sound walkingSound, upgradeDisplaySound, upgradeUnlockedSound,
     throwSound, recallSound, enemyHitSound, deflectSound, upgradeSelectedSound,
-    playerHurtSound;
+    playerHurtSound, upgradeCardHoverSound, gameOverSound,
+    gameOverScreenFallSound;
+
+extern Sound otherStatsDisplaySound, scoreDisplaySound,
+    newHighScoreDisplaySound;
 
 extern Music gameplayMusic[3], menuMusic[3];
 

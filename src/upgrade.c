@@ -28,6 +28,10 @@ void upgradeStructInit(UpgradeScreen *up) {
   up->isHovering[1] = false;
   up->isHovering[2] = false;
 
+  up->isHoveringSoundPlayed[0] = false;
+  up->isHoveringSoundPlayed[1] = false;
+  up->isHoveringSoundPlayed[2] = false;
+
   for (int i = 0; i < NUMBER_OF_UPGRADES; i++) {
     up->upgradeLevels[i] = 0;
   }
@@ -128,6 +132,12 @@ void updateUpgradeScreen(UpgradeScreen *up, Vector2 mousePos) {
             .width = up->baseUpgradeRecs[i].width + 40,
         };
 
+        // Play sound
+        if (!up->isHoveringSoundPlayed[i]) {
+          PlaySound(upgradeCardHoverSound);
+          up->isHoveringSoundPlayed[i] = true;
+        }
+
         // Player selected the upgrade
         if (up->isHovering[i] && IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
           up->selectedUpgrade = up->upgrade[i];
@@ -137,6 +147,8 @@ void updateUpgradeScreen(UpgradeScreen *up, Vector2 mousePos) {
         }
       } else {
         up->isHovering[i] = false;
+        up->isHoveringSoundPlayed[i] = false;
+
         // Reset the rec back
         up->upgradeRecs[i] = (Rectangle){
             .x = up->baseUpgradeRecs[i].x,
