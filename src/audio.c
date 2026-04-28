@@ -6,9 +6,10 @@ Sound walkingSound, upgradeDisplaySound, upgradeUnlockedSound, throwSound,
     playerHurtSound, upgradeCardHoverSound, gameOverSound,
     gameOverScreenFallSound;
 
-Sound otherStatsDisplaySound, scoreDisplaySound, newHighScoreDisplaySound;
+Sound otherStatsDisplaySound, scoreDisplaySound, newHighScoreDisplaySound,
+    transitionSound, selectSound;
 
-Music gameplayMusic[3], menuMusic[3];
+Music gameplayMusic[3], menuMusic[3], idleMusic;
 
 void audioFileLoad() {
   // SOUND
@@ -27,7 +28,8 @@ void audioFileLoad() {
   otherStatsDisplaySound = LoadSound("../audio/sound/otherStatsDiplay.mp3");
   scoreDisplaySound = LoadSound("../audio/sound/scoreDisplay.mp3");
   newHighScoreDisplaySound = LoadSound("../audio/sound/newHighScore.mp3");
-
+  transitionSound = LoadSound("../audio/sound/transition.mp3");
+  selectSound = LoadSound("../audio/sound/select.mp3");
   // MUSIC
   gameplayMusic[0] = LoadMusicStream(
       "../audio/music/gameplayMusic/I've Got Your Back! (Full).ogg");
@@ -47,6 +49,8 @@ void audioFileLoad() {
   menuMusic[0].looping = false;
   menuMusic[1].looping = false;
   menuMusic[2].looping = false;
+
+  idleMusic = LoadMusicStream("../audio/music/gameplayMusic/idle.ogg");
 }
 
 void audioFileUnload() {
@@ -66,6 +70,8 @@ void audioFileUnload() {
   UnloadSound(otherStatsDisplaySound);
   UnloadSound(scoreDisplaySound);
   UnloadSound(newHighScoreDisplaySound);
+  UnloadSound(transitionSound);
+  UnloadSound(selectSound);
 
   UnloadMusicStream(gameplayMusic[0]);
   UnloadMusicStream(gameplayMusic[1]);
@@ -74,6 +80,8 @@ void audioFileUnload() {
   UnloadMusicStream(menuMusic[0]);
   UnloadMusicStream(menuMusic[1]);
   UnloadMusicStream(menuMusic[2]);
+
+  UnloadMusicStream(idleMusic);
 
   CloseAudioDevice();
 }

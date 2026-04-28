@@ -25,6 +25,7 @@ typedef enum {
   UPGRADE_SCREEN,
   TESTING,
   PAUSED,
+  TRANSITION,
 } GameState;
 
 typedef struct {
@@ -57,9 +58,8 @@ typedef struct {
 
   MenuState menuState;
 
-  bool transToPlaying;
-  bool transToMenu;
-  bool transPlayingToPlaying;
+  bool startGame;
+  float startGameTimer;
 
 } Game;
 

@@ -3,18 +3,38 @@
 #include "game.h"
 #include <raylib.h>
 
+typedef enum {
+  NOT_ALIVE,
+  TRANS_IN,
+  SWITCH_GAMESTATE,
+  TRANS_OUT,
+  TRANS_DONE,
+} TransitionState;
+
+typedef enum {
+  TO_MENU,
+  TO_PLAYING,
+} TransitionType;
+
 typedef struct {
 
-  int ringDistance;
-  bool transitionIn;
-  bool transitonOut;
-  bool transitionDone;
+  float ringDistance;
+
+  TransitionState state;
+  TransitionType type;
+  float transPauseTimer;
+  float transPauseTimeBase;
+
+  Sound sound;
+  bool soundPlayed;
 } Transition;
 
-void resetTransition();
+void transitionSet(Transition *t, Sound sound);
 
-void createTransition(GameState *state, GameState newState);
+void transitionInit(Transition *t, TransitionType type, float pauseTimer);
 
-void drawTransition();
+void transitionUpdate(Transition *t, GameState *state);
+
+void transitionDraw(Transition *t);
 
 #endif // !d

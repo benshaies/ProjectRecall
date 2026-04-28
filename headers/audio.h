@@ -8,9 +8,9 @@ extern Sound walkingSound, upgradeDisplaySound, upgradeUnlockedSound,
     gameOverScreenFallSound;
 
 extern Sound otherStatsDisplaySound, scoreDisplaySound,
-    newHighScoreDisplaySound;
+    newHighScoreDisplaySound, transitionSound, selectSound;
 
-extern Music gameplayMusic[3], menuMusic[3];
+extern Music gameplayMusic[3], menuMusic[3], idleMusic;
 
 void audioFileLoad();
 

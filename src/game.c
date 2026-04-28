@@ -157,6 +157,8 @@ int menuBoomerangSpeed = 750;
 // Transition variables
 float ringDistance = 1280;
 
+Transition trans;
+
 void SaveHighScore(int score) {
   FILE *f = fopen(SAVE_FILE, "wb");
   if (!f)
@@ -197,6 +199,9 @@ void gameInit() {
   SetTextureFilter(target.texture, TEXTURE_FILTER_POINT);
 
   HideCursor();
+
+  game.startGame = false;
+  game.startGameTimer = 3.0f;
 
   // Loads csv values into array
   csvToArray(game.levelArray, fileName);
@@ -239,6 +244,11 @@ void gameInit() {
   resetTimedEvent(&displayScore, displayScoreTimer, scoreDisplaySound);
 
   game.masterVolume = 0.5f;
+
+  trans.ringDistance = 1280;
+  transitionSet(&trans, transitionSound);
+
+  PlayMusicStream(idleMusic);
 }
 
 // SAVE FILE FUNCTIONS
@@ -249,6 +259,8 @@ void resetGame() {
   for (int i = 0; i < ENEMY_NUM; i++) {
     enemyDelete(enemy, i);
   }
+
+  game.startGame = false;
 
   quitButtonColor = buttonColor;
 
@@ -462,14 +474,16 @@ void updateMusicVolume() {
   SetSoundVolume(otherStatsDisplaySound, 0.5 * mv);
   SetSoundVolume(scoreDisplaySound, 0.5 * mv);
   SetSoundVolume(newHighScoreDisplaySound, 0.5 * mv);
+  SetSoundVolume(trans.sound, 0.2 * mv);
+  SetSoundVolume(selectSound, 0.25 * mv);
 
   SetMusicVolume(gameplayMusic[0], 0.10 * mv);
   SetMusicVolume(gameplayMusic[1], 0.10 * mv);
   SetMusicVolume(gameplayMusic[2], 0.10 * mv);
 
-  SetMusicVolume(menuMusic[0], 0.25);
-  SetMusicVolume(menuMusic[1], 0.25);
-  SetMusicVolume(menuMusic[2], 0.25);
+  SetMusicVolume(menuMusic[0], 0.20);
+  SetMusicVolume(menuMusic[1], 0.20);
+  SetMusicVolume(menuMusic[2], 0.20);
 }
 
 // UPGRADE SCREEN DRAW
@@ -493,7 +507,9 @@ void gameUpdatePausedScreen() {
 
     if (isHovering(quitToMainMenuButtonRec) &&
         IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
-      game.state = MAIN_MENU;
+      SetSoundPitch(selectSound, GetRandomValue(3, 5) * 0.2);
+      PlaySound(selectSound);
+      transitionInit(&trans, TO_MENU, 0.25);
     }
   }
 }
@@ -622,9 +638,11 @@ void menuUpdate() {
   switch (game.menuState) {
   case MAIN:
     if (IsKeyPressed(KEY_ENTER)) {
-      game.state = PLAYING;
+      PlaySound(selectSound);
+      transitionInit(&trans, 1, 0.25);
     }
     if (IsKeyPressed(KEY_TAB)) {
+      PlaySound(selectSound);
       game.menuState = GUIDE;
     }
 
@@ -635,8 +653,6 @@ void menuUpdate() {
       textBobbingSpeed *= -1;
     }
 
-    // menuBoomerangRec.x += GetFrameTime() * menuBoomerangSpeed;
-
     if (menuBoomerangRec.x >= 1080 || menuBoomerangRec.x < 125) {
       menuBoomerangSpeed *= -1;
     }
@@ -644,6 +660,8 @@ void menuUpdate() {
     break;
   case GUIDE:
     if (IsKeyPressed(KEY_TAB)) {
+      SetSoundPitch(selectSound, GetRandomValue(3, 5) * 0.2);
+      PlaySound(selectSound);
       game.menuState = MAIN;
     }
     break;
@@ -655,12 +673,14 @@ void menuDraw() {
   case MAIN:
     DrawTexturePro(mainMenuTexture, (Rectangle){0, 0, 1280, 720},
                    (Rectangle){0, 0, 1280, 720}, (Vector2){0, 0}, 0.0f, WHITE);
-    DrawTextEx(font, "[ENTER] - START GAME", startTextPos, 40, 3, WHITE);
-    DrawTextEx(font, "[TAB] - GUIDE SCREEN", guideTextPos, 40, 3, WHITE);
+    DrawTextEx(font, "[ENTER] - START GAME", startTextPos, 40, 3,
+               quitButtonColor);
+    DrawTextEx(font, "[TAB] - GUIDE SCREEN", guideTextPos, 40, 3,
+               quitButtonColor);
 
     if (game.highScore > 0) {
       DrawTextEx(font, "HIGHSCORE:", (Vector2){475, 510}, 50, 3,
-                 (Color){254, 174, 52, 255});
+                 (Color){162, 38, 51, 255});
 
       Vector2 size =
           MeasureTextEx(font, TextFormat("%d", game.highScore), 50, 3);
@@ -673,31 +693,34 @@ void menuDraw() {
     break;
 
   case GUIDE:
+    DrawTexture(guideScreenTexture, 0, 0, WHITE);
+    break;
   }
 }
 
 // PLAYING STATE FUNCTIONS
 void gamePlayingUpdate() {
   gameSetFullscreen();
-  updateScore();
+
+  if (game.startGame) {
+    updateScore();
+    // GAMEPLAY MUSIC PLAYING
+    if (playGameplayMusic) {
+      updateGameplayMusic();
+    }
+  } else {
+    UpdateMusicStream(idleMusic);
+  }
 
   updateMusicVolume();
 
   if (hitStopTimer <= 0) {
 
     if (IsKeyPressed(KEY_ENTER)) {
-      startGame = !startGame;
+      game.startGame = true;
     }
-    if (startGame) {
+    if (game.startGame) {
       spawnEnemies();
-    }
-
-    if (IsKeyPressed(KEY_F1)) {
-      debugMode = !debugMode;
-    }
-
-    if (IsKeyPressed(KEY_L)) {
-      game.state = DEAD;
     }
 
     int enemyUpdateReturn =
@@ -838,21 +861,10 @@ void gamePlayingDraw() {
                quitButtonColor);
   }
 
-  if (debugMode) {
-    switch (player.state) {
-    case NOTHING:
-      DrawText("NOTHING", 0, 0, 50, GREEN);
-      break;
-    case PULLING_IN:
-      DrawText("PULLING_IN", 0, 0, 50, GREEN);
-      break;
-    case HURT:
-      DrawText("HURT", 0, 0, 50, GREEN);
-      break;
-    case IMMUNITY:
-      DrawText("IMMUNITY", 0, 0, 50, GREEN);
-      break;
-    }
+  // Start game display
+  if (!game.startGame) {
+    DrawTextEx(font, "[ENTER] - START",
+               (Vector2){1280 / 2 - 225, 720 / 2 - 275}, 50, 4, WHITE);
   }
 }
 
@@ -912,8 +924,9 @@ void gameUpdateDeadScreen() {
       playAgainButtonColor = hightlightColor;
 
       if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
-        resetGame();
-        game.state = PLAYING;
+        SetSoundPitch(selectSound, GetRandomValue(3, 5) * 0.2);
+        PlaySound(selectSound);
+        transitionInit(&trans, TO_PLAYING, 0.25);
       }
 
     } else {
@@ -931,8 +944,9 @@ void gameUpdateDeadScreen() {
       };
 
       if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
-        resetGame();
-        game.state = MAIN_MENU;
+        SetSoundPitch(selectSound, GetRandomValue(3, 5) * 0.2);
+        PlaySound(selectSound);
+        transitionInit(&trans, TO_MENU, 0.25);
       }
     } else {
       quitButtonColor = buttonColor;
@@ -1024,7 +1038,8 @@ void gameDeadScreenDraw() {
         }
 
         DrawTextEx(font, "NEW HIGHSCORE",
-                   (Vector2){xPos - 140, gameOverRec.y + gameOverRec.height},
+                   (Vector2){gameOverRec.x + gameOverRec.width / 6,
+                             gameOverRec.y + gameOverRec.height},
                    40, 3, textColor);
       }
       if (newHighScoreDisplayTimer >= 1.3f &&
@@ -1056,6 +1071,7 @@ void gameDeadScreenDraw() {
 
 // GAME FUNCTIONS
 void gameUpdate() {
+  transitionUpdate(&trans, &game.state);
 
   switch (game.state) {
   case MAIN_MENU:
@@ -1065,20 +1081,12 @@ void gameUpdate() {
     updateMusicVolume();
     break;
   case PLAYING:
-    // DEBUG
-    if (IsKeyPressed(KEY_TAB)) {
-      game.state = MAIN_MENU;
+
+    if (!game.startGame) {
     }
 
     if (IsKeyPressed(KEY_ESCAPE)) {
       game.state = PAUSED;
-    }
-
-    // DEBUG
-    if (IsKeyPressed(KEY_U)) {
-      startUpgrades = true;
-    } else if (IsKeyPressed(KEY_H)) {
-      enemyInit(enemy, player.pos, 1, game.scoreThresholdNum);
     }
 
     gamePlayingUpdate();
@@ -1106,11 +1114,6 @@ void gameUpdate() {
     // DEBUG
     if (IsKeyPressed(KEY_P)) {
       player.lives--;
-    }
-
-    // GAMEPLAY MUSIC PLAYING
-    if (playGameplayMusic) {
-      updateGameplayMusic();
     }
 
     break;
@@ -1229,6 +1232,8 @@ void gameDraw() {
   DrawTexturePro(cursorTexture, (Rectangle){0, 0, 16, 16},
                  (Rectangle){mousePos.x - 15, mousePos.y - 15, 30, 30},
                  (Vector2){0, 0}, 0.0f, WHITE);
+
+  transitionDraw(&trans);
 
   EndTextureMode();
 
