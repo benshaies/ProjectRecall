@@ -297,6 +297,9 @@ bool isHovering(Rectangle rec) {
 
 void spawnEnemies() {
   game.enemySpawnTimer += GetFrameTime();
+
+  // update enemy spawn time
+  enemySpawnTime = 2.0f - (((game.scoreThresholdNum - 1) / 2) * 0.15);
   if (game.enemySpawnTimer >= enemySpawnTime) {
 
     // 25 percent chang of spawning shield enemy
@@ -474,7 +477,7 @@ void updateMusicVolume() {
   SetSoundVolume(otherStatsDisplaySound, 0.5 * mv);
   SetSoundVolume(scoreDisplaySound, 0.5 * mv);
   SetSoundVolume(newHighScoreDisplaySound, 0.5 * mv);
-  SetSoundVolume(trans.sound, 0.2 * mv);
+  SetSoundVolume(trans.sound, 0.35 * mv);
   SetSoundVolume(selectSound, 0.25 * mv);
 
   SetMusicVolume(gameplayMusic[0], 0.10 * mv);
@@ -690,6 +693,8 @@ void menuDraw() {
                  (Vector2){475 + 325, 510}, 50, 3, WHITE);
     }
     playAnimation(&player.axe.anim, menuBoomerangRec, 1, 0.05f);
+
+    DrawTextEx(font, "Press Q to QUIT", (Vector2){975, 0}, 30, 3, WHITE);
     break;
 
   case GUIDE:
@@ -700,7 +705,6 @@ void menuDraw() {
 
 // PLAYING STATE FUNCTIONS
 void gamePlayingUpdate() {
-  gameSetFullscreen();
 
   if (game.startGame) {
     updateScore();
@@ -717,6 +721,7 @@ void gamePlayingUpdate() {
   if (hitStopTimer <= 0) {
 
     if (IsKeyPressed(KEY_ENTER)) {
+      PlaySound(selectSound);
       game.startGame = true;
     }
     if (game.startGame) {
@@ -739,7 +744,7 @@ void gamePlayingUpdate() {
     }
     // Enemy killed and spawn particles
     else if (enemyUpdateReturn == 1) {
-
+      screenShake = screenShakeFrameBase;
       game.enemiesKilled++;
       spawnParticlesExpandingRing(
           &ps, player.axe.pos, 0.25, enemy->healthBarColor, 5,
@@ -1070,11 +1075,17 @@ void gameDeadScreenDraw() {
 }
 
 // GAME FUNCTIONS
-void gameUpdate() {
+int gameUpdate() {
   transitionUpdate(&trans, &game.state);
+  gameSetFullscreen();
 
   switch (game.state) {
   case MAIN_MENU:
+
+    if (IsKeyPressed(KEY_Q) && game.menuState == MAIN) {
+      return 1;
+    }
+
     menuUpdate();
     updateParticles(&ps);
     updateMenuMusic();
@@ -1109,11 +1120,6 @@ void gameUpdate() {
     // Player died
     if (player.lives <= 0) {
       game.state = DYING_TRANSITION;
-    }
-
-    // DEBUG
-    if (IsKeyPressed(KEY_P)) {
-      player.lives--;
     }
 
     break;
@@ -1153,6 +1159,7 @@ void gameUpdate() {
     }
     break;
   }
+  return -1;
 }
 
 void gameSetFullscreen() {
@@ -1218,9 +1225,6 @@ void gameDraw() {
   case UPGRADE_SCREEN:
     gamePlayingDraw();
     gameUpgradeScreenDraw();
-    break;
-  case TESTING:
-    drawParticles(&ps);
     break;
   case PAUSED:
     gamePlayingDraw();

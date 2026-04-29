@@ -23,7 +23,6 @@ typedef enum {
   DYING_TRANSITION,
   DEAD,
   UPGRADE_SCREEN,
-  TESTING,
   PAUSED,
   TRANSITION,
 } GameState;
@@ -67,7 +66,7 @@ void gameInit();
 
 void gameSetFullscreen();
 
-void gameUpdate();
+int gameUpdate();
 void resetTimedEvent(TimedEvent *event, float delay, Sound soundEffect);
 
 bool updateTimedEvent(TimedEvent *event);

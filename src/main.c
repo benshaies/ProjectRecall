@@ -2,6 +2,7 @@
 #include "../headers/game.h"
 #include "../headers/textures.h"
 #include "raylib.h"
+#include <stdlib.h>
 
 int main(void) {
 
@@ -9,7 +10,9 @@ int main(void) {
   ToggleBorderlessWindowed();
 
   while (!WindowShouldClose()) {
-    gameUpdate();
+    if (gameUpdate() == 1) {
+      break;
+    }
     gameDraw();
   }
   texturesUnload();

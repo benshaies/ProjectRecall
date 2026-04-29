@@ -1,5 +1,6 @@
 #include "../headers/enemy.h"
 #include "../headers/textures.h"
+#include "raylib.h"
 #include "raymath.h"
 #include "stdio.h"
 
@@ -57,7 +58,7 @@ void enemyInit(Enemy enemy[], Vector2 playerPos, int type, int scoreMilestone) {
       } else if (enemyHealthMultiplier == 2) {
         enemy[i].healthBarColor = (Color){162, 38, 51, 255};
       } else if (enemyHealthMultiplier >= 3) {
-        enemy[i].healthBarColor = (Color){181, 80, 136, 255};
+        enemy[i].healthBarColor = (Color){104, 56, 108, 255};
       }
 
       int ranEnemy = GetRandomValue(0, 2);
@@ -65,18 +66,19 @@ void enemyInit(Enemy enemy[], Vector2 playerPos, int type, int scoreMilestone) {
       if (type == 1) { // Normal
         animationInit(&enemy[i].anim, 0, enemyOneRunTexture[ranEnemy], 16, 4, 0,
                       0);
-        enemy[i].speed = GetRandomValue(3, 4);
+        enemy[i].speed = GetRandomValue(3, 4) + (enemyHealthMultiplier * 0.25);
 
         enemy[i].health = 150.0f + (50 * enemyHealthMultiplier);
         enemy[i].baseHealth = enemy[i].health;
       } else if (enemy[i].type == 2) { // Shield enemy
         animationInit(&enemy[i].anim, 0, enemy2RunTexture[ranEnemy], 16, 9, 0,
                       0);
-        enemy[i].speed = GetRandomValue(2, 3);
+        enemy[i].speed = GetRandomValue(2, 3) + (enemyHealthMultiplier * 0.125);
 
-        enemy[i].health = 50.0f + (75 * enemyHealthMultiplier);
+        enemy[i].health = 50.0f + (62.5 * enemyHealthMultiplier);
         enemy[i].baseHealth = enemy[i].health;
       }
+
       break;
     }
   }
@@ -284,10 +286,10 @@ void enemyDraw(Enemy enemy[], bool upgradeState) {
 
         if (enemy[i].type == 1) {
           DrawTexturePro(enemyHitTexture, (Rectangle){0, 0, 16, 16}, animRec,
-                         (Vector2){0, 0}, animDir, WHITE);
+                         (Vector2){0, 0}, 0, WHITE);
         } else if (enemy[i].type == 2) {
           DrawTexturePro(enemy2HitTexture, (Rectangle){0, 0, 16, 16}, animRec,
-                         (Vector2){0, 0}, animDir, WHITE);
+                         (Vector2){0, 0}, 0, WHITE);
         }
       }
 
