@@ -18,6 +18,7 @@ typedef enum {
 } MenuState;
 
 typedef enum {
+  SPLASH,
   MAIN_MENU,
   PLAYING,
   DYING_TRANSITION,
@@ -63,6 +64,8 @@ typedef struct {
 } Game;
 
 void gameInit();
+
+void playRaylibSplash(void);
 
 void gameSetFullscreen();
 

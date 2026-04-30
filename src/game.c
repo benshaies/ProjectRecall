@@ -189,7 +189,7 @@ void gameInit() {
 
   font = LoadFontEx("../PixeloidSans-Bold.ttf", 64, 0, 0);
 
-  game.state = MAIN_MENU;
+  game.state = SPLASH;
   game.menuState = MAIN;
   memset(&ps, 0, sizeof(ParticleSystem));
 
@@ -251,6 +251,79 @@ void gameInit() {
   PlayMusicStream(idleMusic);
 }
 
+void playRaylibSplash(void) {
+  static int logoPositionX = 512;
+  static int logoPositionY = 232;
+  static int framesCounter = 0;
+  static int lettersCount = 0;
+  static int topSideRecWidth = 16;
+  static int leftSideRecHeight = 16;
+  static int bottomSideRecWidth = 16;
+  static int rightSideRecHeight = 16;
+  static int state = 0;
+  static float alpha = 1.0f;
+
+  if (state == 0) {
+    framesCounter++;
+    if (framesCounter == 120) {
+      state = 1;
+      framesCounter = 0;
+    }
+  } else if (state == 1) {
+    topSideRecWidth += 4;
+    leftSideRecHeight += 4;
+    if (topSideRecWidth == 256)
+      state = 2;
+  } else if (state == 2) {
+    bottomSideRecWidth += 4;
+    rightSideRecHeight += 4;
+    if (bottomSideRecWidth == 256)
+      state = 3;
+  } else if (state == 3) {
+    framesCounter++;
+    if (framesCounter / 12) {
+      lettersCount++;
+      framesCounter = 0;
+    }
+    if (lettersCount >= 10) {
+      alpha -= 0.02f;
+      if (alpha <= 0.0f) {
+        game.state = MAIN_MENU;
+        return;
+      }
+    }
+  }
+
+  ClearBackground(RAYWHITE);
+
+  if (state == 0) {
+    if ((framesCounter / 15) % 2)
+      DrawRectangle(logoPositionX, logoPositionY, 16, 16, BLACK);
+  } else if (state == 1) {
+    DrawRectangle(logoPositionX, logoPositionY, topSideRecWidth, 16, BLACK);
+    DrawRectangle(logoPositionX, logoPositionY, 16, leftSideRecHeight, BLACK);
+  } else if (state == 2) {
+    DrawRectangle(logoPositionX, logoPositionY, topSideRecWidth, 16, BLACK);
+    DrawRectangle(logoPositionX, logoPositionY, 16, leftSideRecHeight, BLACK);
+    DrawRectangle(logoPositionX + 240, logoPositionY, 16, rightSideRecHeight,
+                  BLACK);
+    DrawRectangle(logoPositionX, logoPositionY + 240, bottomSideRecWidth, 16,
+                  BLACK);
+  } else if (state == 3) {
+    DrawRectangle(logoPositionX, logoPositionY, topSideRecWidth, 16,
+                  Fade(BLACK, alpha));
+    DrawRectangle(logoPositionX, logoPositionY + 16, 16, leftSideRecHeight - 32,
+                  Fade(BLACK, alpha));
+    DrawRectangle(logoPositionX + 240, logoPositionY + 16, 16,
+                  rightSideRecHeight - 32, Fade(BLACK, alpha));
+    DrawRectangle(logoPositionX, logoPositionY + 240, bottomSideRecWidth, 16,
+                  Fade(BLACK, alpha));
+    DrawRectangle(640 - 112, 360 - 112, 224, 224, Fade(RAYWHITE, alpha));
+    DrawText(TextSubtext("raylib", 0, lettersCount), 640 - 44, 360 + 48, 50,
+             Fade(BLACK, alpha));
+    DrawText("Powered by raylib", 640 - 72, 500, 20, Fade(GRAY, alpha));
+  }
+}
 // SAVE FILE FUNCTIONS
 
 void resetGame() {
@@ -299,7 +372,7 @@ void spawnEnemies() {
   game.enemySpawnTimer += GetFrameTime();
 
   // update enemy spawn time
-  enemySpawnTime = 2.0f - (((game.scoreThresholdNum - 1) / 2) * 0.15);
+  enemySpawnTime = 2.0f - (((game.scoreThresholdNum - 1) / 2) * 0.175);
   if (game.enemySpawnTimer >= enemySpawnTime) {
 
     // 25 percent chang of spawning shield enemy
@@ -692,9 +765,22 @@ void menuDraw() {
       DrawTextEx(font, TextFormat("%d", game.highScore),
                  (Vector2){475 + 325, 510}, 50, 3, WHITE);
     }
-    playAnimation(&player.axe.anim, menuBoomerangRec, 1, 0.05f);
-
+    DrawTexturePro(axeBaseTexture, (Rectangle){0, 0, 16, 16}, menuBoomerangRec,
+                   (Vector2){0, 0}, 0.0, WHITE);
     DrawTextEx(font, "Press Q to QUIT", (Vector2){975, 0}, 30, 3, WHITE);
+
+    static float fontSize = 30.0f;
+    static float dir = 1.0f;
+
+    fontSize += dir * 0.15f;
+    if (fontSize >= 40.0f)
+      dir = -1.0f;
+    if (fontSize <= 32.5f)
+      dir = 1.0f;
+
+    DrawTextPro(font, "By StillBenja", (Vector2){925, 275}, (Vector2){0, 0},
+                -15, fontSize, 3, WHITE);
+
     break;
 
   case GUIDE:
@@ -1205,6 +1291,10 @@ void gameDraw() {
   ClearBackground(BLACK);
 
   switch (game.state) {
+
+  case SPLASH:
+    playRaylibSplash();
+    break;
   case MAIN_MENU:
     menuDraw();
     drawParticles(&ps);

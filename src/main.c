@@ -7,6 +7,7 @@
 int main(void) {
 
   gameInit();
+
   ToggleBorderlessWindowed();
 
   while (!WindowShouldClose()) {

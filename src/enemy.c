@@ -66,7 +66,7 @@ void enemyInit(Enemy enemy[], Vector2 playerPos, int type, int scoreMilestone) {
       if (type == 1) { // Normal
         animationInit(&enemy[i].anim, 0, enemyOneRunTexture[ranEnemy], 16, 4, 0,
                       0);
-        enemy[i].speed = GetRandomValue(3, 4) + (enemyHealthMultiplier * 0.25);
+        enemy[i].speed = GetRandomValue(3, 4) + (enemyHealthMultiplier * 0.3);
 
         enemy[i].health = 150.0f + (50 * enemyHealthMultiplier);
         enemy[i].baseHealth = enemy[i].health;
